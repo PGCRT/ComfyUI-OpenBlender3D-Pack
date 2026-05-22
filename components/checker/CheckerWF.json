@@ -1,0 +1,21 @@
+{
+  "1": {
+    "inputs": {},
+    "class_type": "OpenBlenderChecker",
+    "_meta": {
+      "title": "Checker"
+    }
+  },
+  "2": {
+    "inputs": {
+      "source": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Preview as Text"
+    }
+  }
+}

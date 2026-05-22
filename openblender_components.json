@@ -134,6 +134,13 @@
       "env_configs": [
         "nodes/comfy-env.toml"
       ]
+    },
+    {
+      "id": "checker",
+      "label": "Checker",
+      "module": "components.checker",
+      "nodes_file": "nodes.py",
+      "startup": "direct"
     }
   ],
   "policy": {

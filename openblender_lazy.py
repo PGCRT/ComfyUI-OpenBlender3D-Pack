@@ -36,11 +36,12 @@ _COMPONENT_DEFAULTS: dict[str, dict[str, Any]] = {
     "lito": {"label": "LiTo", "module": "components.lito", "nodes_package": "nodes", "env_configs": ["nodes/comfy-env.toml"], "viewers": []},
     "depthanythingv3": {"label": "DepthAnythingV3", "module": "components.depthanythingv3", "nodes_package": "nodes", "env_configs": ["nodes/comfy-env.toml"], "viewers": []},
     "moge2": {"label": "MoGe2", "module": "components.moge2", "nodes_package": "nodes", "env_configs": ["nodes/comfy-env.toml"], "viewers": []},
+    "checker": {"label": "Checker", "module": "components.checker", "nodes_file": "nodes.py", "viewers": []},
 }
 
 _COMPONENT_ORDER = [
     "motioncapture", "sam3dbody", "pixal3d", "gaussianpack", "hymotion",
-    "camerapack", "multiband", "geometrypack", "skintokens", "lito", "depthanythingv3", "moge2",
+    "camerapack", "multiband", "geometrypack", "skintokens", "lito", "depthanythingv3", "moge2", "checker",
 ]
 
 
