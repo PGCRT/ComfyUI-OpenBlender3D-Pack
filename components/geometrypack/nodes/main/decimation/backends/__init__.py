@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 ComfyUI-GeometryPack Contributors
+
+"""
+Individual decimation backend nodes (hidden from UI, invoked via unified Decimate Mesh node).
+"""
+
+from .quadric_edge_collapse import NODE_CLASS_MAPPINGS as QEC_MAPS, NODE_DISPLAY_NAME_MAPPINGS as QEC_DISP
+from .fast_simplification import NODE_CLASS_MAPPINGS as FS_MAPS, NODE_DISPLAY_NAME_MAPPINGS as FS_DISP
+from .vertex_clustering import NODE_CLASS_MAPPINGS as VC_MAPS, NODE_DISPLAY_NAME_MAPPINGS as VC_DISP
+from .decimate_pro import NODE_CLASS_MAPPINGS as DP_MAPS, NODE_DISPLAY_NAME_MAPPINGS as DP_DISP
+
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
+
+NODE_CLASS_MAPPINGS.update(QEC_MAPS)
+NODE_CLASS_MAPPINGS.update(FS_MAPS)
+NODE_CLASS_MAPPINGS.update(VC_MAPS)
+NODE_CLASS_MAPPINGS.update(DP_MAPS)
+
+NODE_DISPLAY_NAME_MAPPINGS.update(QEC_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(FS_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(VC_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(DP_DISP)
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

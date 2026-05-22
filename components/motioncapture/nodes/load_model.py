@@ -1,0 +1,284 @@
+"""
+LoadGVHMRModels Node - Downloads and verifies GVHMR model files.
+
+Lightweight node: only validates paths and returns config strings.
+No torch, no model loading -- all heavy work happens in GVHMRInference.
+"""
+
+import os
+from pathlib import Path
+import folder_paths
+
+from comfy_api.latest import io
+
+MODELS_DIR = Path(folder_paths.models_dir) / "motion_capture"
+os.makedirs(str(MODELS_DIR), exist_ok=True)
+folder_paths.add_model_folder_path("motion_capture", str(MODELS_DIR))
+
+from .motion_utils.pylogger import Log
+
+
+class LoadGVHMRModels(io.ComfyNode):
+    """
+    ComfyUI node for checking/downloading GVHMR model files.
+    Returns a config dict of paths (strings only) for GVHMRInference.
+    """
+
+    # Model download configuration (HuggingFace) -- safetensors from apozz repo
+    MODEL_CONFIGS = {
+        "gvhmr": {
+            "repo_id": "apozz/motion-capture-safetensors",
+            "filename": "gvhmr.safetensors",
+        },
+        "vitpose": {
+            "repo_id": "apozz/motion-capture-safetensors",
+            "filename": "vitpose.safetensors",
+        },
+        "hmr2": {
+            "repo_id": "apozz/motion-capture-safetensors",
+            "filename": "hmr2.safetensors",
+        },
+    }
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="LoadGVHMRModels",
+            display_name="(Down)Load GVHMR Models",
+            category="OpenBlender/MotionCapture/GVHMR",
+            inputs=[
+                io.String.Input("model_path_override", default="", multiline=False,
+                                tooltip="Optional: Override default model checkpoint path", optional=True),
+                io.Combo.Input("precision", options=["auto", "bf16", "fp16", "fp32"], default="auto",
+                               tooltip="Model precision. auto: best for your GPU (bf16 on Ampere+, fp16 on Volta/Turing, fp32 on older).",
+                               optional=True),
+                io.Combo.Input("attention", options=["auto", "sdpa", "flash_attn", "sage"], default="sdpa",
+                               tooltip="Attention backend. auto: best available (sage > flash_attn > sdpa). sdpa: PyTorch native. flash_attn: Tri Dao's FlashAttention (FA2/FA3, requires flash-attn package). sage: SageAttention (auto-detects v3 for Blackwell or v2, requires sageattention/sageattn3 package).",
+                               optional=True),
+                io.Boolean.Input("load_dpvo", default=False,
+                                 tooltip="Download DPVO model for moving camera scenarios (~100MB)",
+                                 optional=True),
+            ],
+            outputs=[
+                io.Custom("GVHMR_CONFIG").Output(display_name="config"),
+            ],
+        )
+
+    @staticmethod
+    def check_and_download_model(model_name: str, target_path: Path) -> bool:
+        """Check if model exists, download from HuggingFace if missing."""
+        if target_path.exists():
+            Log.info(f"[LoadGVHMRModels] {model_name} found at {target_path}")
+            return True
+
+        if model_name not in LoadGVHMRModels.MODEL_CONFIGS:
+            Log.error(f"[LoadGVHMRModels] No download config for {model_name}")
+            return False
+
+        try:
+            from huggingface_hub import hf_hub_download
+        except ImportError:
+            Log.error("[LoadGVHMRModels] huggingface_hub not installed. Run: pip install huggingface_hub")
+            return False
+
+        config = LoadGVHMRModels.MODEL_CONFIGS[model_name]
+        Log.info(f"[LoadGVHMRModels] Downloading {model_name} from HuggingFace...")
+        Log.info(f"[LoadGVHMRModels] Repository: {config['repo_id']}")
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            hf_hub_download(
+                repo_id=config["repo_id"],
+                filename=config["filename"],
+                local_dir=str(MODELS_DIR),
+                local_dir_use_symlinks=False,
+            )
+            Log.info(f"[LoadGVHMRModels] Downloaded {model_name} to {target_path}")
+            return True
+        except Exception as e:
+            Log.error(f"[LoadGVHMRModels] Failed to download {model_name}: {e}")
+            return False
+
+    @staticmethod
+    def download_smpl_from_hf(model_name: str, target_path: Path) -> bool:
+        """Download SMPL model from HuggingFace if missing."""
+        try:
+            from huggingface_hub import hf_hub_download
+        except ImportError:
+            Log.error("[LoadGVHMRModels] huggingface_hub not installed. Run: pip install huggingface_hub")
+            return False
+
+        hf_files = {
+            "SMPL_FEMALE.npz": "4_SMPLhub/SMPL/X_model_npz/SMPL_F_model.npz",
+            "SMPL_MALE.npz": "4_SMPLhub/SMPL/X_model_npz/SMPL_M_model.npz",
+            "SMPL_NEUTRAL.npz": "4_SMPLhub/SMPL/X_model_npz/SMPL_N_model.npz",
+            "SMPLX_FEMALE.npz": "4_SMPLhub/SMPLX/X_npz/SMPLX_FEMALE.npz",
+            "SMPLX_MALE.npz": "4_SMPLhub/SMPLX/X_npz/SMPLX_MALE.npz",
+            "SMPLX_NEUTRAL.npz": "4_SMPLhub/SMPLX/X_npz/SMPLX_NEUTRAL.npz",
+        }
+
+        if model_name not in hf_files:
+            return False
+
+        Log.info(f"[LoadGVHMRModels] Downloading {model_name} from HuggingFace...")
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            import tempfile
+            with tempfile.TemporaryDirectory(dir=str(MODELS_DIR)) as tmp_dir:
+                hf_hub_download(
+                    repo_id="lithiumice/models_hub",
+                    filename=hf_files[model_name],
+                    local_dir=tmp_dir,
+                    local_dir_use_symlinks=False,
+                )
+                downloaded = Path(tmp_dir) / hf_files[model_name]
+                downloaded.rename(target_path)
+            Log.info(f"[LoadGVHMRModels] Downloaded {model_name}")
+            return True
+        except Exception as e:
+            Log.error(f"[LoadGVHMRModels] Failed to download {model_name}: {e}")
+            return False
+
+    @staticmethod
+    def check_smpl_models() -> bool:
+        """Check if SMPL body models are available, download from HuggingFace if missing."""
+        smpl_dir = MODELS_DIR / "body_models" / "smpl"
+        smplx_dir = MODELS_DIR / "body_models" / "smplx"
+
+        smpl_files = ["SMPL_FEMALE.npz", "SMPL_MALE.npz", "SMPL_NEUTRAL.npz"]
+        smplx_files = ["SMPLX_FEMALE.npz", "SMPLX_MALE.npz", "SMPLX_NEUTRAL.npz"]
+
+        for filename in smpl_files:
+            file_path = smpl_dir / filename
+            if not file_path.exists():
+                Log.info(f"[LoadGVHMRModels] {filename} not found, downloading from HuggingFace...")
+                if not LoadGVHMRModels.download_smpl_from_hf(filename, file_path):
+                    Log.warn(f"[LoadGVHMRModels] Could not auto-download {filename}")
+
+        for filename in smplx_files:
+            file_path = smplx_dir / filename
+            if not file_path.exists():
+                Log.info(f"[LoadGVHMRModels] {filename} not found, downloading from HuggingFace...")
+                if not LoadGVHMRModels.download_smpl_from_hf(filename, file_path):
+                    Log.warn(f"[LoadGVHMRModels] Could not auto-download {filename}")
+
+        smpl_exists = all((smpl_dir / f).exists() for f in smpl_files)
+        smplx_exists = all((smplx_dir / f).exists() for f in smplx_files)
+
+        if not (smpl_exists or smplx_exists):
+            error_msg = (
+                "\n" + "="*80 + "\n"
+                "SMPL Body Models Not Found!\n\n"
+                "Attempted auto-download from HuggingFace but failed.\n"
+                "You can manually download SMPL models:\n\n"
+                "Option 1: Run install.py script\n"
+                "  cd ComfyUI/custom_nodes/ComfyUI-MotionCapture\n"
+                "  python install.py\n\n"
+                "Option 2: Manual download (official sources)\n"
+                "  1. Visit https://smpl.is.tue.mpg.de/ and register\n"
+                "  2. Visit https://smpl-x.is.tue.mpg.de/ and register\n"
+                "  3. Place files in:\n"
+                f"     {smpl_dir}/\n"
+                f"     {smplx_dir}/\n\n"
+                f"See {MODELS_DIR}/README.md for detailed instructions.\n"
+                + "="*80
+            )
+            raise FileNotFoundError(error_msg)
+
+        Log.info("[LoadGVHMRModels] SMPL body models found")
+        return True
+
+    @staticmethod
+    def download_dpvo_checkpoint(target_dir: Path) -> bool:
+        """Download DPVO checkpoint from HuggingFace if missing."""
+        checkpoint_path = target_dir / "dpvo.pth"
+
+        if checkpoint_path.exists():
+            Log.info(f"[LoadGVHMRModels] DPVO checkpoint found at {checkpoint_path}")
+            return True
+
+        Log.info("[LoadGVHMRModels] Downloading DPVO model from HuggingFace...")
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        try:
+            from huggingface_hub import hf_hub_download
+
+            hf_hub_download(
+                repo_id="apozz/motion-capture-safetensors",
+                filename="dpvo.pth",
+                local_dir=str(target_dir),
+                local_dir_use_symlinks=False,
+            )
+
+            if checkpoint_path.exists():
+                Log.info(f"[LoadGVHMRModels] DPVO downloaded to {target_dir}")
+                return True
+            else:
+                Log.error("[LoadGVHMRModels] dpvo.pth not found after download")
+                return False
+
+        except Exception as e:
+            Log.error(f"[LoadGVHMRModels] DPVO download failed: {e}")
+            return False
+
+    @classmethod
+    def execute(cls, model_path_override="", precision="auto", attention="auto", load_dpvo=False):
+        """Validate model paths and return config dict (strings only)."""
+
+        Log.info("[LoadGVHMRModels] Checking GVHMR models...")
+
+        gvhmr_path = MODELS_DIR / "gvhmr.safetensors"
+        vitpose_path = MODELS_DIR / "vitpose.safetensors"
+        hmr2_path = MODELS_DIR / "hmr2.safetensors"
+
+        if model_path_override and model_path_override.strip():
+            gvhmr_path = Path(model_path_override)
+
+        cls.check_and_download_model("gvhmr", gvhmr_path)
+        cls.check_and_download_model("vitpose", vitpose_path)
+        cls.check_and_download_model("hmr2", hmr2_path)
+
+        cls.check_smpl_models()
+
+        if not all([gvhmr_path.exists(), vitpose_path.exists(), hmr2_path.exists()]):
+            raise FileNotFoundError(
+                "Not all required models are available. "
+                "Please check error messages above or run install.py script."
+            )
+
+        Log.info("[LoadGVHMRModels] All models verified!")
+
+        # Download DPVO checkpoint if requested (but don't load it)
+        dpvo_dir = ""
+        if load_dpvo:
+            dpvo_path = MODELS_DIR / "dpvo"
+            if cls.download_dpvo_checkpoint(dpvo_path):
+                dpvo_dir = str(dpvo_path)
+                Log.info(f"[LoadGVHMRModels] DPVO dir: {dpvo_dir}")
+            else:
+                Log.warn("[LoadGVHMRModels] DPVO requested but checkpoint not available")
+
+        # Return config -- strings and bools only, no tensors or complex objects
+        config = {
+            "models_dir": str(MODELS_DIR),
+            "gvhmr_path": str(gvhmr_path),
+            "vitpose_path": str(vitpose_path),
+            "hmr2_path": str(hmr2_path),
+            "body_models_path": str(MODELS_DIR / "body_models"),
+            "precision": precision,
+            "attention": attention,
+            "dpvo_dir": dpvo_dir,
+        }
+
+        return io.NodeOutput(config)
+
+
+# Node registration
+NODE_CLASS_MAPPINGS = {
+    "LoadGVHMRModels": LoadGVHMRModels,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "LoadGVHMRModels": "(Down)Load GVHMR Models",
+}

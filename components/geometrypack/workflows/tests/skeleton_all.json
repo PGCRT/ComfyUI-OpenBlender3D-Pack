@@ -1,0 +1,904 @@
+{
+  "id": "test-skeleton-all-0001",
+  "revision": 0,
+  "last_node_id": 13,
+  "last_link_id": 17,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -800,
+        0
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            1,
+            2,
+            3,
+            4,
+            13
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackLoadMesh",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "GeomPackMeshFromSkeleton",
+      "pos": [
+        -400,
+        -100
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "link": 5
+        },
+        {
+          "localized_name": "joint_radius",
+          "name": "joint_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "joint_radius"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "bone_radius",
+          "name": "bone_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "bone_radius"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackMeshFromSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        0.02,
+        0.01
+      ]
+    },
+    {
+      "id": 7,
+      "type": "GeomPackMeshFromSkeleton",
+      "pos": [
+        0,
+        -100
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "link": 6
+        },
+        {
+          "localized_name": "joint_radius",
+          "name": "joint_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "joint_radius"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "bone_radius",
+          "name": "bone_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "bone_radius"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackMeshFromSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        0.02,
+        0.01
+      ]
+    },
+    {
+      "id": 9,
+      "type": "GeomPackMeshFromSkeleton",
+      "pos": [
+        800,
+        -100
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "link": 8
+        },
+        {
+          "localized_name": "joint_radius",
+          "name": "joint_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "joint_radius"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "bone_radius",
+          "name": "bone_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "bone_radius"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackMeshFromSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        0.02,
+        0.01
+      ]
+    },
+    {
+      "id": 13,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        420.7704391776521,
+        57.93320128406541
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 12
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 17
+        },
+        {
+          "name": "mesh_3",
+          "type": "TRIMESH",
+          "link": null,
+          "localized_name": "mesh_3",
+          "widget": {
+            "name": "mesh_3"
+          }
+        },
+        {
+          "name": "mesh_4",
+          "type": "TRIMESH",
+          "link": null,
+          "localized_name": "mesh_4",
+          "widget": {
+            "name": "mesh_4"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshMulti",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "fields",
+        "{\"show_edges\":true,\"camera_state\":\"{\\\"position\\\":[-0.10839671976880196,-0.004104770901572197,-1.5722856770085691],\\\"focalPoint\\\":[0,0,0],\\\"viewUp\\\":[-0.09618484690884596,0.9953553201116373,0.004032610888962136]}\",\"selected_field\":\"\"}",
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 12,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        -415.02629601803164,
+        53.835120551874915
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 13
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 9
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 10
+        },
+        {
+          "localized_name": "mesh_4",
+          "name": "mesh_4",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 11
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshMulti",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 8,
+      "type": "GeomPackMeshFromSkeleton",
+      "pos": [
+        400,
+        -100
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "link": 7
+        },
+        {
+          "localized_name": "joint_radius",
+          "name": "joint_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "joint_radius"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "bone_radius",
+          "name": "bone_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "bone_radius"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "links": [
+            11,
+            17
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackMeshFromSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        0.02,
+        0.01
+      ]
+    },
+    {
+      "id": 2,
+      "type": "GeomPackExtractSkeleton",
+      "pos": [
+        -400,
+        -400
+      ],
+      "size": [
+        370,
+        154
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 1
+        },
+        {
+          "name": "fix_mesh",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "fix_mesh",
+          "widget": {
+            "name": "fix_mesh"
+          }
+        },
+        {
+          "name": "normalize",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "normalize",
+          "widget": {
+            "name": "normalize"
+          }
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackExtractSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        false,
+        {
+          "backend": "wavefront",
+          "waves": 1,
+          "step_size": 1.0
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "GeomPackExtractSkeleton",
+      "pos": [
+        0,
+        -400
+      ],
+      "size": [
+        370,
+        154
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 2
+        },
+        {
+          "name": "fix_mesh",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "fix_mesh",
+          "widget": {
+            "name": "fix_mesh"
+          }
+        },
+        {
+          "name": "normalize",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "normalize",
+          "widget": {
+            "name": "normalize"
+          }
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackExtractSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        false,
+        {
+          "backend": "wavefront",
+          "waves": 1,
+          "step_size": 1.0
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "GeomPackExtractSkeleton",
+      "pos": [
+        400,
+        -400
+      ],
+      "size": [
+        370,
+        154
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 3
+        },
+        {
+          "name": "fix_mesh",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "fix_mesh",
+          "widget": {
+            "name": "fix_mesh"
+          }
+        },
+        {
+          "name": "normalize",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "normalize",
+          "widget": {
+            "name": "normalize"
+          }
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackExtractSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        false,
+        {
+          "backend": "wavefront",
+          "waves": 1,
+          "step_size": 1.0
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "GeomPackExtractSkeleton",
+      "pos": [
+        800,
+        -400
+      ],
+      "size": [
+        370,
+        154
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 4
+        },
+        {
+          "name": "fix_mesh",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "fix_mesh",
+          "widget": {
+            "name": "fix_mesh"
+          }
+        },
+        {
+          "name": "normalize",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "normalize",
+          "widget": {
+            "name": "normalize"
+          }
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackExtractSkeleton",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        false,
+        {
+          "backend": "wavefront",
+          "waves": 1,
+          "step_size": 1.0
+        }
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "TRIMESH"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "TRIMESH"
+    ],
+    [
+      3,
+      1,
+      0,
+      4,
+      0,
+      "TRIMESH"
+    ],
+    [
+      4,
+      1,
+      0,
+      5,
+      0,
+      "TRIMESH"
+    ],
+    [
+      5,
+      2,
+      0,
+      6,
+      0,
+      "SKELETON"
+    ],
+    [
+      6,
+      3,
+      0,
+      7,
+      0,
+      "SKELETON"
+    ],
+    [
+      7,
+      4,
+      0,
+      8,
+      0,
+      "SKELETON"
+    ],
+    [
+      8,
+      5,
+      0,
+      9,
+      0,
+      "SKELETON"
+    ],
+    [
+      9,
+      6,
+      0,
+      12,
+      1,
+      "TRIMESH"
+    ],
+    [
+      10,
+      7,
+      0,
+      12,
+      2,
+      "TRIMESH"
+    ],
+    [
+      11,
+      8,
+      0,
+      12,
+      3,
+      "TRIMESH"
+    ],
+    [
+      12,
+      9,
+      0,
+      13,
+      0,
+      "TRIMESH"
+    ],
+    [
+      13,
+      1,
+      0,
+      12,
+      0,
+      "TRIMESH"
+    ],
+    [
+      17,
+      8,
+      0,
+      13,
+      1,
+      "TRIMESH"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.6932265832844006,
+      "offset": [
+        1028.0454101888524,
+        463.54868515925733
+      ]
+    },
+    "frontendVersion": "1.30.6",
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

@@ -1,0 +1,13 @@
+[project]
+name = "comfyui-geometrypack"
+description = "CGAL - Blender - IGL - Paraview - VTK. Geometry processing nodes for ComfyUI - mesh manipulation, remeshing, hole filling, UV unwrapping, Alpha Wrapping, and 3D visualization"
+version = "0.2.4"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/PozzettiAndrea/ComfyUI-GeometryPack"
+
+[tool.comfy]
+PublisherId = "pznodes"
+DisplayName = "GeometryPack"
+Icon = ""

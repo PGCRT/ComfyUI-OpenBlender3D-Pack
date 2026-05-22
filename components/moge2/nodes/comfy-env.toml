@@ -1,0 +1,21 @@
+[dependencies]
+av = "*"
+
+[cuda]
+packages = ["sageattention", "flash_attn"]
+
+[pypi-dependencies]
+# ComfyUI runtime deps that the isolation env needs to import comfy.utils /
+# comfy.model_management / comfy.ops from the host ComfyUI tree.
+safetensors = ">=0.4.0"
+psutil = "*"
+einops = "*"
+comfy-aimdo = "*"
+transformers = "*"
+huggingface_hub = "*"
+trimesh = ">=4.0"
+scipy = "*"
+matplotlib = "*"
+pillow = "*"
+opencv-python-headless = "*"
+utils3d = { git = "https://github.com/EasternJournalist/utils3d.git", rev = "3fab839f0be9931dac7c8488eb0e1600c236e183" }

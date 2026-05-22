@@ -1,0 +1,713 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-fillholes0001",
+  "revision": 0,
+  "last_node_id": 9,
+  "last_link_id": 16,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -877.8583007812498,
+        -118.69721679687503
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackLoadMesh"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "GeomPackFillHoles",
+      "pos": [
+        334.9272949218742,
+        -20.695605468749807
+      ],
+      "size": [
+        370,
+        110
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "link": 4
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "filled_mesh",
+          "name": "filled_mesh",
+          "type": "TRIMESH",
+          "links": [
+            11
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackFillHoles"
+      },
+      "widgets_values": [
+        {
+          "backend": "trimesh"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 6,
+      "type": "GeomPackFillHoles",
+      "pos": [
+        326.3868652343745,
+        132.61044921874958
+      ],
+      "size": [
+        370,
+        134
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "link": 5
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "filled_mesh",
+          "name": "filled_mesh",
+          "type": "TRIMESH",
+          "links": [
+            12
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackFillHoles"
+      },
+      "widgets_values": [
+        {
+          "backend": "trimesh"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 9,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        733.4390136718749,
+        -21.472656249999996
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 11
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 12
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 13
+        },
+        {
+          "name": "mesh_4",
+          "type": "TRIMESH",
+          "link": null,
+          "localized_name": "mesh_4",
+          "widget": {
+            "name": "mesh_4"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 7,
+      "type": "GeomPackFillHoles",
+      "pos": [
+        330.51953125,
+        299.8362304687501
+      ],
+      "size": [
+        370,
+        134
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "link": 6
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "filled_mesh",
+          "name": "filled_mesh",
+          "type": "TRIMESH",
+          "links": [
+            13
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackFillHoles"
+      },
+      "widgets_values": [
+        {
+          "backend": "trimesh"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 8,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        -453.58149414062495,
+        -26.819580078124975
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 7
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 16
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 15
+        },
+        {
+          "name": "mesh_4",
+          "type": "TRIMESH",
+          "link": null,
+          "localized_name": "mesh_4",
+          "widget": {
+            "name": "mesh_4"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 3,
+      "type": "GeomPackFillHoles",
+      "pos": [
+        -872.1312345377477,
+        15.347377293094459
+      ],
+      "size": [
+        370,
+        134
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "link": 2
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "filled_mesh",
+          "name": "filled_mesh",
+          "type": "TRIMESH",
+          "links": [
+            16
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackFillHoles"
+      },
+      "widgets_values": [
+        {
+          "backend": "trimesh"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 4,
+      "type": "GeomPackFillHoles",
+      "pos": [
+        -880.4343275014749,
+        198.27937524291306
+      ],
+      "size": [
+        370,
+        158
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "link": 3
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "filled_mesh",
+          "name": "filled_mesh",
+          "type": "TRIMESH",
+          "links": [
+            15
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "6e8088fb3283086d421a58c3fdf5b061176519aa",
+        "Node name for S&R": "GeomPackFillHoles"
+      },
+      "widgets_values": [
+        {
+          "backend": "trimesh"
+        },
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "TRIMESH"
+    ],
+    [
+      3,
+      1,
+      0,
+      4,
+      0,
+      "TRIMESH"
+    ],
+    [
+      4,
+      1,
+      0,
+      5,
+      0,
+      "TRIMESH"
+    ],
+    [
+      5,
+      1,
+      0,
+      6,
+      0,
+      "TRIMESH"
+    ],
+    [
+      6,
+      1,
+      0,
+      7,
+      0,
+      "TRIMESH"
+    ],
+    [
+      7,
+      1,
+      0,
+      8,
+      0,
+      "TRIMESH"
+    ],
+    [
+      11,
+      5,
+      0,
+      9,
+      0,
+      "TRIMESH"
+    ],
+    [
+      12,
+      6,
+      0,
+      9,
+      1,
+      "TRIMESH"
+    ],
+    [
+      13,
+      7,
+      0,
+      9,
+      2,
+      "TRIMESH"
+    ],
+    [
+      15,
+      4,
+      0,
+      8,
+      2,
+      "TRIMESH"
+    ],
+    [
+      16,
+      3,
+      0,
+      8,
+      1,
+      "TRIMESH"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5557061362999314,
+      "offset": [
+        1336.8524572682982,
+        439.4612648408024
+      ]
+    },
+    "frontendVersion": "1.30.6",
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

@@ -1,0 +1,16 @@
+python = "3.11"
+
+[target.linux-64.dependencies]
+xorg-libsm = "*"     # libSM.so.6 required by bpy
+
+[options]
+shared_env_name = "openblender"
+
+[dependencies]
+av = "*"
+numpy = "1.26.*"   # bpy 4.2 compiled against numpy 1.x
+tqdm = "*"
+
+[pypi-dependencies]
+bpy = ">=4.2"
+trimesh = "*"

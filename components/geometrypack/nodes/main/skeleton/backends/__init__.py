@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 ComfyUI-GeometryPack Contributors
+
+"""
+Individual skeleton extraction backend nodes (hidden from UI, invoked via unified Extract Skeleton node).
+"""
+
+from .wavefront import NODE_CLASS_MAPPINGS as WF_MAPS, NODE_DISPLAY_NAME_MAPPINGS as WF_DISP
+from .vertex_clusters import NODE_CLASS_MAPPINGS as VC_MAPS, NODE_DISPLAY_NAME_MAPPINGS as VC_DISP
+from .edge_collapse import NODE_CLASS_MAPPINGS as EC_MAPS, NODE_DISPLAY_NAME_MAPPINGS as EC_DISP
+from .teasar import NODE_CLASS_MAPPINGS as TE_MAPS, NODE_DISPLAY_NAME_MAPPINGS as TE_DISP
+
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
+
+NODE_CLASS_MAPPINGS.update(WF_MAPS)
+NODE_CLASS_MAPPINGS.update(VC_MAPS)
+NODE_CLASS_MAPPINGS.update(EC_MAPS)
+NODE_CLASS_MAPPINGS.update(TE_MAPS)
+
+NODE_DISPLAY_NAME_MAPPINGS.update(WF_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(VC_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(EC_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(TE_DISP)
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

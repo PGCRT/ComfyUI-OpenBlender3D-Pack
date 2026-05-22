@@ -1,0 +1,260 @@
+{
+  "88": {
+    "inputs": {
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "AnimateDiff",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 8,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "505",
+        0
+      ],
+      "audio": [
+        "505",
+        1
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "116": {
+    "inputs": {
+      "prompt": "",
+      "seed": 1,
+      "Image I2V / V2V FirstFrame": [
+        "527",
+        0
+      ],
+      "Video (V2V image batch)": [
+        "525",
+        0
+      ],
+      "V2V Depth (override)": [
+        "525",
+        0
+      ],
+      "MegaPixels (override)": [
+        "520",
+        0
+      ],
+      "HQ (override)": [
+        "521",
+        0
+      ]
+    },
+    "class_type": "CRT_LTX23USConfig",
+    "_meta": {
+      "title": "LTX 2.3 US Config (CRT)"
+    }
+  },
+  "505": {
+    "inputs": {
+      "workflow_mode": "V2V",
+      "hq": false,
+      "live_preview": false,
+      "frame_count_from_audio": false,
+      "vae_decode_tiled": false,
+      "megapixels_target": 1,
+      "aspect_ratio": "3:2 (Landscape)",
+      "frame_count": 161,
+      "v2v_mode": "Depth Control",
+      "v2v_guide_strength": 0.8,
+      "depth_megapixels": 0.5,
+      "v2v_aspect_ratio": "16:9 (Landscape)",
+      "sampler_main": "euler_ancestral_cfg_pp",
+      "sampler_refine": "euler_cfg_pp",
+      "steps": 9,
+      "generated_audio_gain_db": -12,
+      "firstframe_strength": 1,
+      "depth_mouth_mask": false,
+      "mouth_detect_megapixels": 0.25,
+      "mouth_single_item": true,
+      "mouth_detect_chunk_size": 10,
+      "mouth_mask_expand": 8,
+      "mouth_mask_blur": 8,
+      "models_pipe": [
+        "536",
+        0
+      ],
+      "config_pipe": [
+        "116",
+        0
+      ]
+    },
+    "class_type": "CRT_LTX23UnifiedSampler",
+    "_meta": {
+      "title": ""
+    }
+  },
+  "520": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Float"
+    }
+  },
+  "521": {
+    "inputs": {
+      "value": true
+    },
+    "class_type": "PrimitiveBoolean",
+    "_meta": {
+      "title": "HQ"
+    }
+  },
+  "525": {
+    "inputs": {
+      "video": "viewport_video (36).mp4",
+      "force_rate": 0,
+      "custom_width": 0,
+      "custom_height": 0,
+      "frame_load_cap": 0,
+      "skip_first_frames": 0,
+      "select_every_nth": 1,
+      "format": "LTXV"
+    },
+    "class_type": "VHS_LoadVideo",
+    "_meta": {
+      "title": "Load Video"
+    }
+  },
+  "527": {
+    "inputs": {
+      "image": "example.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "FirstFrame"
+    }
+  },
+  "529": {
+    "inputs": {
+      "patch_cublaslinear": false,
+      "sage_attention": "auto",
+      "enable_fp16_accumulation": true
+    },
+    "class_type": "CRTAutoDLLTX23Model",
+    "_meta": {
+      "title": "LTX2.3 Model"
+    }
+  },
+  "530": {
+    "inputs": {},
+    "class_type": "CRTAutoDLLTX23VideoVAE",
+    "_meta": {
+      "title": "LTX2.3 VIDEO VAE"
+    }
+  },
+  "531": {
+    "inputs": {},
+    "class_type": "CRTAutoDLLTX23AudioVAE",
+    "_meta": {
+      "title": "LTX2.3 AUDIO VAE"
+    }
+  },
+  "532": {
+    "inputs": {},
+    "class_type": "CRTAutoDLLTX23CLIP",
+    "_meta": {
+      "title": "LTX2.3 CLIP"
+    }
+  },
+  "533": {
+    "inputs": {},
+    "class_type": "CRTAutoDLLTX23LatentUpscaler",
+    "_meta": {
+      "title": "LTX2.3 Latent Upscaler"
+    }
+  },
+  "534": {
+    "inputs": {
+      "strength_model": 1,
+      "model": [
+        "529",
+        0
+      ]
+    },
+    "class_type": "CRTAutoDLLTX23ICLoRA",
+    "_meta": {
+      "title": "LTX2.3 IC LoRA"
+    }
+  },
+  "535": {
+    "inputs": {
+      "model": "da3_large.safetensors",
+      "precision": "auto",
+      "attention": "auto"
+    },
+    "class_type": "DownloadAndLoadDepthAnythingV3Model",
+    "_meta": {
+      "title": "DownloadAndLoadDepthAnythingV3Model"
+    }
+  },
+  "536": {
+    "inputs": {
+      "model": [
+        "529",
+        0
+      ],
+      "model_union_control": [
+        "534",
+        0
+      ],
+      "vae": [
+        "530",
+        0
+      ],
+      "audio_vae": [
+        "531",
+        0
+      ],
+      "clip": [
+        "532",
+        0
+      ],
+      "spatial_upscale_model": [
+        "533",
+        0
+      ],
+      "da3_model": [
+        "535",
+        0
+      ],
+      "latent_downscale_factor": [
+        "534",
+        1
+      ],
+      "model_outpaint": [
+        "537",
+        0
+      ]
+    },
+    "class_type": "CRT_LTX23USModelsPipe",
+    "_meta": {
+      "title": "LTX 2.3 US Models Pipe (CRT)"
+    }
+  },
+  "537": {
+    "inputs": {
+      "strength_model": 1,
+      "model": [
+        "529",
+        0
+      ]
+    },
+    "class_type": "CRTAutoDLLTX23ICOutpaintLoRA",
+    "_meta": {
+      "title": "LTX2.3 IC Outpaint LoRA"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "47": {
+    "inputs": {
+      "images": [
+        "81",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "80": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "102",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Single Prompt"
+    }
+  },
+  "81": {
+    "inputs": {
+      "seed": 0,
+      "increment_seed": true,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "mode": "Sequential",
+      "image_megapixels": 1,
+      "edit_model_flux2klein": true,
+      "reference_mode": "per_item",
+      "enable_vae_decode": true,
+      "create_comparison_grid": false,
+      "save_images": false,
+      "save_folder_path": ".\\ComfyUI\\output",
+      "save_subfolder_name": "KSAMPLER_BATCH",
+      "save_filename_prefix": "output",
+      "model": [
+        "100",
+        0
+      ],
+      "vae": [
+        "101",
+        0
+      ],
+      "positive": [
+        "80",
+        0
+      ],
+      "image": [
+        "97",
+        0
+      ]
+    },
+    "class_type": "CRT_KSamplerBatch",
+    "_meta": {
+      "title": "KSampler Batch (CRT)"
+    }
+  },
+  "96": {
+    "inputs": {
+      "image": "bike.webp"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "97": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 1,
+      "resolution_steps": 1,
+      "image": [
+        "96",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "ImageScaleToTotalPixels"
+    }
+  },
+  "100": {
+    "inputs": {
+      "patch_cublaslinear": false,
+      "sage_attention": "auto",
+      "enable_fp16_accumulation": true
+    },
+    "class_type": "CRTAutoDLFlux2KleinModel",
+    "_meta": {
+      "title": "Flux2Klein Model"
+    }
+  },
+  "101": {
+    "inputs": {},
+    "class_type": "CRTAutoDLFlux2KleinVAE",
+    "_meta": {
+      "title": "Flux2Klein VAE"
+    }
+  },
+  "102": {
+    "inputs": {},
+    "class_type": "CRTAutoDLFlux2KleinCLIP",
+    "_meta": {
+      "title": "Flux2Klein CLIP"
+    }
+  }
+}

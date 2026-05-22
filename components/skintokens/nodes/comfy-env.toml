@@ -1,0 +1,23 @@
+python = "3.11"
+
+[options]
+shared_env_name = "openblender"
+health_check_timeout = 15
+
+[pypi-dependencies]
+transformers = ">=4.57.0"
+diffusers = ">=0.35.0"
+python-box = "*"
+einops = "*"
+omegaconf = "*"
+lightning = "*"
+addict = "*"
+fast-simplification = "*"
+bpy = ">=4.2"
+trimesh = "*"
+open3d = "*"
+huggingface-hub = "*"
+numpy = ">=1.26.0"
+gradio = "*"
+bottle = "*"
+tornado = "*"

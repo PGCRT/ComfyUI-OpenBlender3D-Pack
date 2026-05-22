@@ -1,0 +1,336 @@
+{
+  "id": "a1b2c3d4-5678-90ab-cdef-123456789abc",
+  "revision": 0,
+  "last_node_id": 6,
+  "last_link_id": 8,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -600,
+        0
+      ],
+      "size": [
+        320,
+        150
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            6,
+            7
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "0.1.1",
+        "Node name for S&R": "GeomPackLoadMesh"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "GeomPackMeshFromSkeleton",
+      "pos": [
+        90,
+        118.18181818181819
+      ],
+      "size": [
+        320,
+        150
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "link": 8
+        },
+        {
+          "localized_name": "joint_radius",
+          "name": "joint_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "joint_radius"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "bone_radius",
+          "name": "bone_radius",
+          "type": "FLOAT",
+          "widget": {
+            "name": "bone_radius"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "0.1.1",
+        "Node name for S&R": "GeomPackMeshFromSkeleton"
+      },
+      "widgets_values": [
+        0.02,
+        0.01
+      ]
+    },
+    {
+      "id": 5,
+      "type": "GeomPackPreviewMeshDual",
+      "pos": [
+        436.4755539772727,
+        -12.853497869317964
+      ],
+      "size": [
+        768,
+        834
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 5
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "type": "TRIMESH",
+          "link": 6
+        },
+        {
+          "name": "layout",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "layout",
+          "widget": {
+            "name": "layout"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "opacity_1",
+          "type": "FLOAT",
+          "link": null,
+          "localized_name": "opacity_1",
+          "widget": {
+            "name": "opacity_1"
+          }
+        },
+        {
+          "name": "opacity_2",
+          "type": "FLOAT",
+          "link": null,
+          "localized_name": "opacity_2",
+          "widget": {
+            "name": "opacity_2"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "84b2d1816c08ec3cc7d3a4fffa90692669e17507",
+        "Node name for S&R": "GeomPackPreviewMeshDual"
+      },
+      "widgets_values": [
+        "overlay",
+        "fields",
+        0.5,
+        0.5,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 6,
+      "type": "GeomPackExtractSkeleton",
+      "pos": [
+        -221.02161221590862,
+        83.49450639204564
+      ],
+      "size": [
+        270,
+        154
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 7
+        },
+        {
+          "name": "fix_mesh",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "fix_mesh",
+          "widget": {
+            "name": "fix_mesh"
+          }
+        },
+        {
+          "name": "normalize",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "normalize",
+          "widget": {
+            "name": "normalize"
+          }
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "skeleton",
+          "name": "skeleton",
+          "type": "SKELETON",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "84b2d1816c08ec3cc7d3a4fffa90692669e17507",
+        "Node name for S&R": "GeomPackExtractSkeleton"
+      },
+      "widgets_values": [
+        false,
+        false,
+        {
+          "backend": "wavefront",
+          "waves": 1,
+          "step_size": 1.0
+        }
+      ]
+    }
+  ],
+  "links": [
+    [
+      5,
+      3,
+      0,
+      5,
+      0,
+      "TRIMESH"
+    ],
+    [
+      6,
+      1,
+      0,
+      5,
+      1,
+      "TRIMESH"
+    ],
+    [
+      7,
+      1,
+      0,
+      6,
+      0,
+      "TRIMESH"
+    ],
+    [
+      8,
+      6,
+      0,
+      3,
+      0,
+      "SKELETON"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1,
+      "offset": [
+        636.8432812499994,
+        157.49840553977253
+      ]
+    },
+    "frontendVersion": "1.30.6",
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

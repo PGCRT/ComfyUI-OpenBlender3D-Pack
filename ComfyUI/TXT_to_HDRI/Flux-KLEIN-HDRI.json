@@ -1,0 +1,173 @@
+{
+  "47": {
+    "inputs": {
+      "images": [
+        "81",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "80": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "108",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Single Prompt"
+    }
+  },
+  "81": {
+    "inputs": {
+      "seed": 0,
+      "increment_seed": true,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "mode": "Sequential",
+      "image_megapixels": 1,
+      "edit_model_flux2klein": false,
+      "reference_mode": "per_item",
+      "enable_vae_decode": true,
+      "create_comparison_grid": false,
+      "save_images": false,
+      "save_folder_path": ".\\ComfyUI\\output",
+      "save_subfolder_name": "KSAMPLER_BATCH",
+      "save_filename_prefix": "output",
+      "model": [
+        "110",
+        0
+      ],
+      "vae": [
+        "109",
+        0
+      ],
+      "positive": [
+        "80",
+        0
+      ],
+      "latent_image": [
+        "103",
+        0
+      ]
+    },
+    "class_type": "CRT_KSamplerBatch",
+    "_meta": {
+      "title": "KSampler Batch (CRT)"
+    }
+  },
+  "102": {
+    "inputs": {
+      "image": [
+        "104",
+        0
+      ]
+    },
+    "class_type": "GetImageSize",
+    "_meta": {
+      "title": "Get Image Size"
+    }
+  },
+  "103": {
+    "inputs": {
+      "width": [
+        "102",
+        0
+      ],
+      "height": [
+        "102",
+        1
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Empty Flux 2 Latent"
+    }
+  },
+  "104": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 1,
+      "resolution_steps": 1,
+      "image": [
+        "105",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "ImageScaleToTotalPixels"
+    }
+  },
+  "105": {
+    "inputs": {
+      "mask": [
+        "106",
+        0
+      ]
+    },
+    "class_type": "MaskToImage",
+    "_meta": {
+      "title": "Convert Mask to Image"
+    }
+  },
+  "106": {
+    "inputs": {
+      "value": 1,
+      "width": 1024,
+      "height": 512
+    },
+    "class_type": "SolidMask",
+    "_meta": {
+      "title": "SolidMask"
+    }
+  },
+  "107": {
+    "inputs": {
+      "patch_cublaslinear": false,
+      "sage_attention": "auto",
+      "enable_fp16_accumulation": true
+    },
+    "class_type": "CRTAutoDLFlux2KleinModel",
+    "_meta": {
+      "title": "Flux2Klein Model"
+    }
+  },
+  "108": {
+    "inputs": {},
+    "class_type": "CRTAutoDLFlux2KleinCLIP",
+    "_meta": {
+      "title": "Flux2Klein CLIP"
+    }
+  },
+  "109": {
+    "inputs": {},
+    "class_type": "CRTAutoDLFlux2KleinVAE",
+    "_meta": {
+      "title": "Flux2Klein VAE"
+    }
+  },
+  "110": {
+    "inputs": {
+      "strength_model": 1,
+      "model": [
+        "107",
+        0
+      ]
+    },
+    "class_type": "CRTAutoDLFlux2KleinHDRILoRA",
+    "_meta": {
+      "title": "Flux2Klein HDRI LoRA"
+    }
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "1": {
+    "inputs": {
+      "image": "pixal3d_test.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Charger Image"
+    }
+  },
+  "3": {
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ],
+      "mask": [
+        "28",
+        1
+      ]
+    },
+    "class_type": "Pixal3DPreprocessImage",
+    "_meta": {
+      "title": "Pixal3D Preprocess Image"
+    }
+  },
+  "7": {
+    "inputs": {
+      "pipeline_type": "1024_cascade",
+      "attn_backend": "auto"
+    },
+    "class_type": "Pixal3DLoadPipeline",
+    "_meta": {
+      "title": "Load Pixal3D Pipeline"
+    }
+  },
+  "8": {
+    "inputs": {
+      "mask": [
+        "28",
+        1
+      ]
+    },
+    "class_type": "MaskPreview",
+    "_meta": {
+      "title": "MaskPreview"
+    }
+  },
+  "16": {
+    "inputs": {
+      "model_file": [
+        "29",
+        0
+      ],
+      "image": ""
+    },
+    "class_type": "Preview3D",
+    "_meta": {
+      "title": "Aperçu 3D"
+    }
+  },
+  "20": {
+    "inputs": {
+      "seed": 42,
+      "max_num_tokens": 49152,
+      "ss_steps": 12,
+      "ss_guidance": 7.5,
+      "ss_rescale": 0.7,
+      "ss_rescale_t": 5,
+      "shape_steps": 12,
+      "shape_guidance": 7.5,
+      "shape_rescale": 0.5,
+      "shape_rescale_t": 3,
+      "tex_steps": 12,
+      "tex_guidance": 1,
+      "tex_rescale": 0,
+      "tex_rescale_t": 3,
+      "pipeline": [
+        "7",
+        0
+      ],
+      "image": [
+        "3",
+        0
+      ],
+      "camera": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "Pixal3DGenerateMesh",
+    "_meta": {
+      "title": "Pixal3D Generate Mesh"
+    }
+  },
+  "22": {
+    "inputs": {
+      "texture_size": 2048,
+      "double_sided": false,
+      "bake_mode": "pbr",
+      "debug_dump": false,
+      "trimesh": [
+        "24",
+        0
+      ],
+      "voxelgrid": [
+        "20",
+        1
+      ],
+      "original_mesh": [
+        "20",
+        0
+      ]
+    },
+    "class_type": "Pixal3DRasterizePBR",
+    "_meta": {
+      "title": "Pixal3D Rasterize PBR"
+    }
+  },
+  "23": {
+    "inputs": {
+      "filename_prefix": "pixal3d",
+      "trimesh": [
+        "22",
+        0
+      ]
+    },
+    "class_type": "Pixal3DExportGLB",
+    "_meta": {
+      "title": "Pixal3D Export GLB"
+    }
+  },
+  "24": {
+    "inputs": {
+      "target_face_count": 200000,
+      "remesh": true,
+      "remesh_resolution": 512,
+      "remesh_band": 1,
+      "remove_inner_faces": true,
+      "fill_holes": true,
+      "fill_holes_perimeter": 0.03,
+      "floater_threshold": 0.001,
+      "weld_vertices": true,
+      "weld_digits": 4,
+      "chart_cone_angle": 90,
+      "chart_refine_iterations": 0,
+      "chart_global_iterations": 1,
+      "chart_smooth_strength": 1,
+      "trimesh": [
+        "20",
+        0
+      ]
+    },
+    "class_type": "Pixal3DProcessMesh",
+    "_meta": {
+      "title": "Pixal3D Process Mesh"
+    }
+  },
+  "25": {
+    "inputs": {
+      "model": "moge-2-vitl-normal.pt",
+      "precision": "auto",
+      "attention": "auto"
+    },
+    "class_type": "DownloadAndLoadMoGe2Model",
+    "_meta": {
+      "title": "(Down)Load MoGe-2 Model"
+    }
+  },
+  "26": {
+    "inputs": {
+      "resolution_level": 9,
+      "num_tokens": 0,
+      "fov_x_deg": 0,
+      "force_projection": true,
+      "apply_mask": true,
+      "moge_model": [
+        "25",
+        0
+      ],
+      "images": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "MoGe2Inference",
+    "_meta": {
+      "title": "MoGe-2 Geometry"
+    }
+  },
+  "27": {
+    "inputs": {
+      "fov_x_deg": [
+        "26",
+        6
+      ],
+      "mesh_scale": 1,
+      "extend_pixel": 0,
+      "image_resolution": 512
+    },
+    "class_type": "Pixal3DCameraFromFOV",
+    "_meta": {
+      "title": "Pixal3D Camera From FOV"
+    }
+  },
+  "28": {
+    "inputs": {
+      "model": "BEN2",
+      "sensitivity": 1,
+      "process_res": 1024,
+      "mask_blur": 0,
+      "mask_offset": 0,
+      "invert_output": false,
+      "refine_foreground": true,
+      "background": "Alpha",
+      "background_color": "#222222",
+      "image": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "RMBG",
+    "_meta": {
+      "title": "Retirer l'arrière-plan (RMBG)"
+    }
+  },
+  "29": {
+    "inputs": {
+      "empty_cache": true,
+      "gc_collect": true,
+      "unload_all_models": true,
+      "any_input": [
+        "23",
+        0
+      ]
+    },
+    "class_type": "VRAM_Debug",
+    "_meta": {
+      "title": "VRAM Debug"
+    }
+  }
+}

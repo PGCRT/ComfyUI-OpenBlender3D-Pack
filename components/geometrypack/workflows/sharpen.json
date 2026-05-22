@@ -1,0 +1,317 @@
+{
+  "id": "1420e2f4-15c5-4bb4-b298-69fb0d5f6356",
+  "revision": 0,
+  "last_node_id": 8,
+  "last_link_id": 8,
+  "nodes": [
+    {
+      "id": 6,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -719.4819699886815,
+        -132.5789047560572
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            6
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "283cfbc4414b0b9343c6562793f7b42f80dd32dd",
+        "Node name for S&R": "GeomPackLoadMesh"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -765.4619884518163,
+        129.58774960185292
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            5,
+            7
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "283cfbc4414b0b9343c6562793f7b42f80dd32dd",
+        "Node name for S&R": "GeomPackLoadMesh"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "GeomPackSharpenMesh",
+      "pos": [
+        -424.4191210268283,
+        273.2249762472692
+      ],
+      "size": [
+        210,
+        126
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 5
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "sharpened_mesh",
+          "name": "sharpened_mesh",
+          "type": "TRIMESH",
+          "links": [
+            8
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "283cfbc4414b0b9343c6562793f7b42f80dd32dd",
+        "Node name for S&R": "GeomPackSharpenMesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "two_step",
+          "smooth_steps": 3,
+          "normal_threshold": 60.0
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 8,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        -93.23315435742478,
+        -231.02465627340337
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 6
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 7
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 8
+        },
+        {
+          "name": "mesh_4",
+          "type": "TRIMESH",
+          "link": null,
+          "localized_name": "mesh_4",
+          "widget": {
+            "name": "mesh_4"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "283cfbc4414b0b9343c6562793f7b42f80dd32dd",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        "fields",
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      5,
+      4,
+      0,
+      7,
+      0,
+      "TRIMESH"
+    ],
+    [
+      6,
+      6,
+      0,
+      8,
+      0,
+      "TRIMESH"
+    ],
+    [
+      7,
+      4,
+      0,
+      8,
+      1,
+      "TRIMESH"
+    ],
+    [
+      8,
+      7,
+      0,
+      8,
+      2,
+      "TRIMESH"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "workflowRendererVersion": "LG",
+    "ds": {
+      "scale": 0.6209213230591556,
+      "offset": [
+        948.190060342013,
+        447.314044719686
+      ]
+    }
+  },
+  "version": 0.4
+}

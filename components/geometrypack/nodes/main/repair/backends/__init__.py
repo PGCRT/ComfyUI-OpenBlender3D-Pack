@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 ComfyUI-GeometryPack Contributors
+
+"""
+Individual fill-holes backend nodes (hidden from UI, invoked via unified Fill Holes node).
+"""
+
+from .trimesh_fill import NODE_CLASS_MAPPINGS as TM_MAPS, NODE_DISPLAY_NAME_MAPPINGS as TM_DISP
+from .pymeshlab_fill import NODE_CLASS_MAPPINGS as PML_MAPS, NODE_DISPLAY_NAME_MAPPINGS as PML_DISP
+from .pymeshfix_fill import NODE_CLASS_MAPPINGS as PMF_MAPS, NODE_DISPLAY_NAME_MAPPINGS as PMF_DISP
+from .igl_fan_fill import NODE_CLASS_MAPPINGS as IGL_MAPS, NODE_DISPLAY_NAME_MAPPINGS as IGL_DISP
+
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
+
+NODE_CLASS_MAPPINGS.update(TM_MAPS)
+NODE_CLASS_MAPPINGS.update(PML_MAPS)
+NODE_CLASS_MAPPINGS.update(PMF_MAPS)
+NODE_CLASS_MAPPINGS.update(IGL_MAPS)
+
+NODE_DISPLAY_NAME_MAPPINGS.update(TM_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(PML_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(PMF_DISP)
+NODE_DISPLAY_NAME_MAPPINGS.update(IGL_DISP)
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

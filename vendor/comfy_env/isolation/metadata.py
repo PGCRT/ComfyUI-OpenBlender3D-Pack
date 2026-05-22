@@ -1,0 +1,512 @@
+"""Metadata extraction for isolation nodes via subprocess scan.
+
+Spawns a short-lived subprocess in the isolation env's Python to import node modules
+and extract class metadata (INPUT_TYPES, RETURN_TYPES, etc.). The main process never
+imports isolation code -- it builds proxy classes from the serialized metadata.
+"""
+
+import base64
+import glob
+import hashlib
+import json
+import os
+import pickle
+import subprocess
+import sys
+import tempfile
+import time
+from functools import wraps
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
+
+from ..config.types import DEFAULT_HEALTH_CHECK_TIMEOUT
+
+_DEBUG = os.environ.get("COMFY_ENV_DEBUG", "").lower() in ("1", "true", "yes")
+_CACHE_VERSION = "5"  # Bump when _METADATA_SCRIPT or cache format changes
+_TRUST_CACHE = os.environ.get("COMFY_ENV_METADATA_TRUST_CACHE", "1").lower() in ("1", "true", "yes")
+
+
+# ---------------------------------------------------------------------------
+# Metadata extraction script (runs in isolation subprocess)
+# ---------------------------------------------------------------------------
+
+_METADATA_SCRIPT = r'''
+import sys
+import os
+import json
+import base64
+import importlib
+
+# Print environment diagnostics to stderr (survives crashes)
+_debug = os.environ.get("COMFY_ENV_DEBUG", "").lower() in ("1", "true", "yes")
+if _debug:
+    _sep = ";" if sys.platform == "win32" else ":"
+    print(f"[meta-scan] python: {sys.executable}", file=sys.stderr, flush=True)
+    print(f"[meta-scan] PATH:", file=sys.stderr, flush=True)
+    for _i, _p in enumerate(os.environ.get("PATH", "").split(_sep)):
+        print(f"[meta-scan]   [{_i}] {_p}", file=sys.stderr, flush=True)
+    # List shared libraries in the env's library directory
+    _env_root = os.path.dirname(sys.executable)
+    if sys.platform == "win32":
+        import ctypes
+        _lib_dir = os.path.join(_env_root, "Library", "bin")
+        _ext = ".dll"
+    elif sys.platform == "darwin":
+        _lib_dir = os.path.join(_env_root, "..", "lib")
+        _ext = ".dylib"
+    else:
+        _lib_dir = os.path.join(_env_root, "..", "lib")
+        _ext = ".so"
+    _lib_dir = os.path.normpath(_lib_dir)
+    if os.path.isdir(_lib_dir):
+        _libs = sorted(f for f in os.listdir(_lib_dir) if _ext in f.lower())
+        print(f"[meta-scan] {_lib_dir}: {len(_libs)} shared libs", file=sys.stderr, flush=True)
+        # On Windows, probe each DLL with ctypes to detect missing dependencies
+        if sys.platform == "win32":
+            if hasattr(os, "add_dll_directory"):
+                os.add_dll_directory(_lib_dir)
+            for _d in _libs:
+                _path = os.path.join(_lib_dir, _d)
+                try:
+                    ctypes.WinDLL(_path)
+                    print(f"[meta-scan]   OK   {_d}", file=sys.stderr, flush=True)
+                except OSError as _e:
+                    print(f"[meta-scan]   FAIL {_d}: {_e}", file=sys.stderr, flush=True)
+        else:
+            # Deduplicate versioned symlinks: libfoo.so.1.2.0 -> libfoo.so
+            import re
+            _seen = set()
+            _deduped = []
+            for _d in _libs:
+                _base = re.sub(r'\.so[\d.]*$', '.so', _d) if '.so' in _d else re.sub(r'\.(\d+\.)*dylib$', '.dylib', _d)
+                if _base not in _seen:
+                    _seen.add(_base)
+                    _deduped.append(_base)
+            for _d in _deduped[:40]:
+                print(f"[meta-scan]   {_d}", file=sys.stderr, flush=True)
+            if len(_deduped) > 40:
+                print(f"[meta-scan]   ... and {len(_deduped) - 40} more", file=sys.stderr, flush=True)
+    else:
+        print(f"[meta-scan] lib dir NOT FOUND: {_lib_dir}", file=sys.stderr, flush=True)
+    # Also print LD/DYLD paths on non-Windows
+    if sys.platform != "win32":
+        _ld = os.environ.get("LD_LIBRARY_PATH") or os.environ.get("DYLD_LIBRARY_PATH")
+        if _ld:
+            print(f"[meta-scan] LD/DYLD_LIBRARY_PATH: {_ld}", file=sys.stderr, flush=True)
+
+working_dir = sys.argv[1]
+package_name = sys.argv[2]
+
+sys.path.insert(0, working_dir)
+os.chdir(working_dir)
+
+# Add ComfyUI base to sys.path so nodes can import folder_paths etc.
+_comfyui_base = os.environ.get("COMFYUI_BASE")
+if _comfyui_base and _comfyui_base not in sys.path:
+    sys.path.insert(1, _comfyui_base)
+
+# Add host site-packages for torch inheritance (share_torch)
+_host_sp = os.environ.get("_COMFY_ENV_HOST_SP")
+if _host_sp and os.path.isdir(_host_sp) and _host_sp not in sys.path:
+    sys.path.insert(0, _host_sp)
+
+
+# Redirect stdout to stderr during import so that any print() calls
+# from imported code don't corrupt our base64 payload on stdout.
+_real_stdout = sys.stdout
+sys.stdout = sys.stderr
+
+if _debug:
+    print(f"[meta-scan] importing {package_name} from {working_dir}", file=sys.stderr, flush=True)
+module = importlib.import_module(package_name)
+if _debug:
+    print(f"[meta-scan] import OK", file=sys.stderr, flush=True)
+
+nodes = {}
+for name, cls in getattr(module, "NODE_CLASS_MAPPINGS", {}).items():
+    meta = {
+        "function": getattr(cls, "FUNCTION", None),
+        "category": getattr(cls, "CATEGORY", ""),
+        "output_node": getattr(cls, "OUTPUT_NODE", False),
+        "return_types": getattr(cls, "RETURN_TYPES", ()),
+        "return_names": getattr(cls, "RETURN_NAMES", ()),
+        "output_is_list": getattr(cls, "OUTPUT_IS_LIST", None),
+        "input_is_list": getattr(cls, "INPUT_IS_LIST", None),
+        "module_name": cls.__module__,
+        "class_name": cls.__name__,
+    }
+    # Call INPUT_TYPES classmethod
+    if hasattr(cls, "INPUT_TYPES") and callable(cls.INPUT_TYPES):
+        try:
+            meta["input_types"] = cls.INPUT_TYPES()
+        except Exception as e:
+            meta["input_types"] = {"required": {}}
+            meta["input_types_error"] = str(e)
+
+    nodes[name] = meta
+
+display = getattr(module, "NODE_DISPLAY_NAME_MAPPINGS", {})
+
+payload = {"nodes": nodes, "display": display}
+
+# Restore real stdout for the payload write
+sys.stdout = _real_stdout
+sys.stdout.buffer.write(base64.b64encode(json.dumps(payload).encode("utf-8")))
+'''
+
+
+# ---------------------------------------------------------------------------
+# Metadata fetching
+# ---------------------------------------------------------------------------
+
+def fetch_metadata(
+    env_dir: Path,
+    node_dir: Path,
+    package_name: str,
+    working_dir: Path,
+    env_vars: Optional[Dict[str, str]] = None,
+    host_torch_sp: Optional[Path] = None,
+) -> Dict[str, Any]:
+    """Fetch node metadata by running a subprocess in the isolation env.
+
+    Args:
+        env_dir: Path to _env_* directory
+        node_dir: Path to the node subdirectory (e.g., nodes/gpu/)
+        package_name: Dotted module name (e.g., "nodes.gpu")
+        working_dir: Package root for sys.path (e.g., .../ComfyUI-GeometryPack/)
+        env_vars: Additional environment variables from comfy-env.toml
+        host_torch_sp: Host site-packages path for torch inheritance (share_torch)
+
+    Returns:
+        {"nodes": {name: meta_dict, ...}, "display": {name: display_name, ...}}
+        Empty dict on failure.
+    """
+    # Use the main ComfyUI Python interpreter for metadata scanning.
+    # The scanner only needs to read INPUT_TYPES / RETURN_TYPES and does not
+    # execute node logic, so it does not need the isolated env's packages.
+    # Using the main Python ensures ComfyUI core packages (e.g. comfy_aimdo)
+    # are available, preventing import failures in nodes that import
+    # comfy.model_management at the top level.
+    python = Path(sys.executable)
+    if not python.exists():
+        print(f"[comfy-env] No Python in {env_dir}, skipping metadata scan")
+        return {"nodes": {}, "display": {}}
+
+    # --- Metadata cache ---
+    # Invalidate when ANY .py file in the package changes (not just __init__.py).
+    # Uses max mtime of all .py files -- fast (stat calls only, no file reads).
+    cache_id = hashlib.sha256(
+        f"{working_dir.resolve()}:{package_name}".encode("utf-8", errors="replace")
+    ).hexdigest()[:16]
+    cache_file = env_dir / f".metadata_cache_{cache_id}.pkl"
+
+    # Fast path for production startup:
+    # trust existing cache and skip package tree walk/stat when enabled.
+    if _TRUST_CACHE and cache_file.exists():
+        try:
+            cached = pickle.loads(cache_file.read_bytes())
+            cached_key = str(cached.get("cache_key", ""))
+            if cached_key.startswith(f"v{_CACHE_VERSION}:"):
+                payload = cached["payload"]
+                node_count = len(payload.get("nodes", {}))
+                if _DEBUG or node_count > 0:
+                    print(
+                        f"[comfy-env] Cache hit(trusted) for {package_name}: {node_count} nodes",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                return payload
+        except Exception:
+            pass
+
+    pkg_dir = working_dir / package_name.replace(".", "/")
+    try:
+        py_files = sorted(pkg_dir.rglob("*.py"))
+        if py_files:
+            mtimes = "|".join(
+                f"{f.relative_to(pkg_dir)}:{f.stat().st_mtime_ns}"
+                for f in py_files
+            )
+            pkg_hash = hashlib.sha256(mtimes.encode()).hexdigest()[:16]
+        else:
+            pkg_hash = "empty"
+    except (OSError, FileNotFoundError):
+        pkg_hash = "missing"
+    cache_key = f"v{_CACHE_VERSION}:{pkg_hash}"
+
+    if cache_file.exists():
+        try:
+            cached = pickle.loads(cache_file.read_bytes())
+            if cached.get("cache_key") == cache_key:
+                payload = cached["payload"]
+                node_count = len(payload.get("nodes", {}))
+                if _DEBUG or node_count > 0:
+                    print(f"[comfy-env] Cache hit for {package_name}: {node_count} nodes",
+                          file=sys.stderr, flush=True)
+                return payload
+            elif _DEBUG:
+                print(f"[comfy-env] Cache stale for {package_name} "
+                      f"(key {cached.get('cache_key')} != {cache_key})",
+                      file=sys.stderr, flush=True)
+        except Exception:
+            pass  # Corrupted cache, fall through to scan
+
+    # Build proper subprocess environment (DLL paths, library paths, etc.)
+    from .wrap import build_isolation_env
+    scan_env = build_isolation_env(python, env_vars)
+    if host_torch_sp:
+        scan_env["_COMFY_ENV_HOST_SP"] = str(host_torch_sp)
+
+    # Write script to temp file
+    script_file = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".py", prefix="comfy_meta_", delete=False,
+            encoding="utf-8",
+        ) as f:
+            f.write(_METADATA_SCRIPT)
+            script_file = f.name
+
+        t0 = time.perf_counter()
+        cmd = [str(python), script_file, str(working_dir), package_name]
+
+        if _DEBUG:
+            print(f"[comfy-env] Metadata scan: {' '.join(cmd)}", file=sys.stderr, flush=True)
+            path_sep = ";" if sys.platform == "win32" else ":"
+            scan_path = scan_env.get("PATH", "")
+            print(f"[comfy-env] Scan env PATH for {package_name}:", file=sys.stderr, flush=True)
+            for i, p in enumerate(scan_path.split(path_sep)):
+                print(f"[comfy-env]   [{i}] {p}", file=sys.stderr, flush=True)
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            cwd=str(working_dir),
+            env=scan_env,
+        )
+
+        elapsed = time.perf_counter() - t0
+
+        # Always print stderr from scan subprocess when debug is on
+        if _DEBUG:
+            scan_stderr = result.stderr.decode("utf-8", errors="replace").strip()
+            if scan_stderr:
+                print(f"[comfy-env] Metadata scan stderr for {package_name}:", file=sys.stderr, flush=True)
+                for line in scan_stderr.splitlines():
+                    print(f"[comfy-env]   {line}", file=sys.stderr, flush=True)
+
+        if result.returncode != 0:
+            rc = result.returncode
+            hex_rc = f" 0x{rc & 0xFFFFFFFF:08X}" if sys.platform == "win32" and rc < 0 else ""
+            stderr = result.stderr.decode("utf-8", errors="replace").strip()
+            print(f"[comfy-env] Metadata scan failed for {package_name} "
+                  f"(exit {rc}{hex_rc}, {elapsed:.1f}s):", file=sys.stderr, flush=True)
+            for line in stderr.splitlines()[-10:]:
+                print(f"[comfy-env]   {line}", file=sys.stderr, flush=True)
+            return {"nodes": {}, "display": {}}
+
+        raw = result.stdout.strip()
+        if not raw:
+            print(f"[comfy-env] Metadata scan returned empty for {package_name}", file=sys.stderr, flush=True)
+            return {"nodes": {}, "display": {}}
+
+        payload = json.loads(base64.b64decode(raw).decode("utf-8"))
+
+        node_count = len(payload.get("nodes", {}))
+        if _DEBUG or node_count > 0:
+            print(f"[comfy-env] Scanned {package_name}: {node_count} nodes ({elapsed:.1f}s)", file=sys.stderr, flush=True)
+
+        # --- Write cache ---
+        try:
+            cache_file.write_bytes(pickle.dumps({"cache_key": cache_key, "payload": payload}))
+        except Exception:
+            pass  # Non-fatal
+
+        return payload
+
+    except Exception as e:
+        print(f"[comfy-env] Metadata scan error for {package_name}: {e}", file=sys.stderr, flush=True)
+        return {"nodes": {}, "display": {}}
+    finally:
+        if script_file and os.path.exists(script_file):
+            try:
+                os.unlink(script_file)
+            except OSError:
+                pass
+
+
+# ---------------------------------------------------------------------------
+# Proxy class builder
+# ---------------------------------------------------------------------------
+
+def build_proxy_class(
+    node_name: str,
+    meta: Dict[str, Any],
+    env_dir: Path,
+    package_root: Path,
+    sys_path: list,
+    lib_path: Optional[str],
+    env_vars: Dict[str, str],
+    health_check_timeout: float = DEFAULT_HEALTH_CHECK_TIMEOUT,
+) -> type:
+    """Build a proxy class from metadata that delegates execution to subprocess.
+
+    The returned class has all the ComfyUI metadata attributes (INPUT_TYPES,
+    RETURN_TYPES, FUNCTION, CATEGORY, etc.) but the FUNCTION method spawns
+    a SubprocessWorker to run the real code in the isolation env.
+    """
+    func_name = meta["function"]
+    module_name = meta["module_name"]
+    class_name = meta["class_name"]
+    input_types = meta.get("input_types", {"required": {}})
+    input_types = {k: dict(v) for k, v in input_types.items()}  # shallow copy
+
+    # Expand DynamicCombo children for V1 compatibility.
+    # ComfyUI only expands DynamicCombo schemas for V3 nodes (subclasses of
+    # _ComfyNodeInternal).  Since the proxy is a V1 class, child inputs with
+    # dotted names (e.g. "backend.target_edge_length") are silently dropped by
+    # get_input_data().  We flatten all option children into "optional" so
+    # they survive, then nest them back in the proxy function before sending
+    # to the worker.
+    dynamic_combo_parents = set()
+    for section in ("required", "optional"):
+        if section not in input_types:
+            continue
+        for name, info in list(input_types[section].items()):
+            if (isinstance(info, (list, tuple)) and len(info) >= 1
+                    and info[0] == "COMFY_DYNAMICCOMBO_V3"):
+                dynamic_combo_parents.add(name)
+                opts_dict = info[1] if len(info) > 1 and isinstance(info[1], dict) else {}
+                for opt in opts_dict.get("options", []):
+                    child_inputs = opt.get("inputs", {})
+                    for child_section in ("required", "optional"):
+                        if child_section in child_inputs:
+                            for child_name, child_info in child_inputs[child_section].items():
+                                dotted = f"{name}.{child_name}"
+                                input_types.setdefault("optional", {})[dotted] = child_info
+
+    # Build class attributes
+    attrs = {
+        "RETURN_TYPES": tuple(meta.get("return_types", ())),
+        "RETURN_NAMES": tuple(meta.get("return_names", ())),
+        "FUNCTION": func_name,
+        "CATEGORY": meta.get("category", ""),
+        "OUTPUT_NODE": meta.get("output_node", False),
+        "_comfy_env_isolated": True,
+        "_comfy_env_module": module_name,
+        "_comfy_env_class": class_name,
+    }
+
+    # Batch processing attributes (ComfyUI uses these for list iteration)
+    if meta.get("output_is_list") is not None:
+        attrs["OUTPUT_IS_LIST"] = tuple(meta["output_is_list"])
+    if meta.get("input_is_list") is not None:
+        attrs["INPUT_IS_LIST"] = meta["input_is_list"]
+
+    # INPUT_TYPES classmethod returning cached metadata
+    @classmethod
+    def _input_types(cls, _cached=input_types):
+        return _cached
+    attrs["INPUT_TYPES"] = _input_types
+
+    # Proxy FUNCTION method -- reuses persistent worker across calls
+    def _make_proxy(fn, mod, cn, ed, pr, sp, lp, ev, hct, dcp):
+        def proxy(self, **kwargs):
+            from .wrap import (_get_or_create_worker, _remove_worker,
+                               _load_worker_models, _register_new_patchers,
+                               _clear_worker_patchers)
+            try:
+                from .workers.base import WorkerError
+            except Exception:
+                WorkerError = RuntimeError
+
+            # Nest DynamicCombo inputs: flat dotted keys → nested dicts.
+            # e.g. {"backend": "grid", "backend.smooth_normals": "true", ...}
+            #   →  {"backend": {"backend": "grid", "smooth_normals": "true"}, ...}
+            if dcp:
+                nested = {}
+                for k, v in kwargs.items():
+                    if '.' in k:
+                        parent, child = k.split('.', 1)
+                        if parent in dcp:
+                            nested.setdefault(parent, {})[child] = v
+                            continue
+                    if k in dcp:
+                        nested.setdefault(k, {})[k] = v
+                        continue
+                    nested[k] = v
+                kwargs = nested
+
+            worker, gen = _get_or_create_worker(ed, pr, sp, lp, ev, hct)
+            try:
+                # Ensure any previously-registered subprocess models are on GPU
+                _load_worker_models(ed, pr)
+
+                try:
+                    from .tensor_utils import prepare_for_ipc_recursive
+                    prepared_kwargs = {k: prepare_for_ipc_recursive(v) for k, v in kwargs.items()}
+                except ImportError:
+                    prepared_kwargs = kwargs
+
+                def _call_once(_worker, _kwargs):
+                    return _worker.call_method(
+                        module_name=mod,
+                        class_name=cn,
+                        method_name=fn,
+                        self_state=self.__dict__.copy() if hasattr(self, "__dict__") else None,
+                        kwargs=_kwargs,
+                        timeout=600.0,
+                    )
+
+                try:
+                    result = _call_once(worker, prepared_kwargs)
+                except WorkerError as e:
+                    # Interrupt/restart can invalidate shared object refs in the worker cache.
+                    # Recreate worker and retry once with a fully re-prepared payload.
+                    if "Object reference not found" not in str(e):
+                        raise
+                    _remove_worker(ed, pr)
+                    worker, gen = _get_or_create_worker(ed, pr, sp, lp, ev, hct)
+                    try:
+                        from .tensor_utils import prepare_for_ipc_recursive
+                        retry_kwargs = {k: prepare_for_ipc_recursive(v) for k, v in kwargs.items()}
+                    except ImportError:
+                        retry_kwargs = kwargs
+                    result = _call_once(worker, retry_kwargs)
+
+                try:
+                    from .tensor_utils import prepare_for_ipc_recursive
+                    result = prepare_for_ipc_recursive(result)
+                except ImportError:
+                    pass
+
+                # Create patchers for subprocess models unless the node explicitly
+                # requested offload. Pixal3D Image To 3D uses force_offload=True to
+                # drop VRAM after generation; registering patchers here would load
+                # those worker models straight back into ComfyUI's VRAM tracker.
+                if kwargs.get("force_offload"):
+                    try:
+                        worker._last_new_models = []
+                    except Exception:
+                        pass
+                    # Keep worker alive so downstream nodes can resolve __comfy_ref__
+                    # outputs, but drop patchers to avoid re-pinning VRAM next call.
+                    _clear_worker_patchers(ed, pr)
+                else:
+                    _register_new_patchers(ed, pr, worker, gen)
+                return result
+            except (RuntimeError, ConnectionError):
+                _remove_worker(ed, pr)
+                raise
+        return proxy
+
+    attrs[func_name] = _make_proxy(
+        func_name, module_name, class_name,
+        env_dir, package_root, sys_path, lib_path, env_vars, health_check_timeout,
+        dynamic_combo_parents,
+    )
+
+    # Create the class
+    proxy_cls = type(class_name, (), attrs)
+    return proxy_cls
+

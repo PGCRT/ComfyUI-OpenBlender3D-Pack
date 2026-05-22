@@ -1,0 +1,11 @@
+{
+  "params": {
+    "seed":       { "node": "81", "input": "seed" },
+    "megapixels": { "node": "81", "input": "image_megapixels" },
+    "steps":      { "node": "81", "input": "steps" },
+    "denoise":    { "node": "81", "input": "denoise" },
+    "prompt":     { "node": "80", "input": "text" }
+  },
+  "seed_nodes": [{ "node": "81", "input": "seed" }],
+  "output_node": "47"
+}

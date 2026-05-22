@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 ComfyUI-GeometryPack Contributors
+
+"""
+Blender UV unwrap nodes
+"""
+
+from .backends import NODE_CLASS_MAPPINGS as BACKENDS_MAPS, NODE_DISPLAY_NAME_MAPPINGS as BACKENDS_DISP
+
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
+
+NODE_CLASS_MAPPINGS.update(BACKENDS_MAPS)
+NODE_DISPLAY_NAME_MAPPINGS.update(BACKENDS_DISP)
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

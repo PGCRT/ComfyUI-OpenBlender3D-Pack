@@ -1,0 +1,147 @@
+{
+  "name": "ComfyUI-OpenBlender3D-Pack",
+  "shared_env_name": "openblender",
+  "bundled_comfy_env": "vendor/comfy_env",
+  "components": [
+    {
+      "id": "motioncapture",
+      "label": "MotionCapture",
+      "module": "components.motioncapture",
+      "nodes_package": "nodes",
+      "source": "PGCRT/ComfyUI-MotionCapture_OB",
+      "startup": "lazy",
+      "viewers": [
+        "fbx",
+        "fbx_compare",
+        "bvh",
+        "fbx_animation",
+        "compare_smpl_bvh",
+        "smpl",
+        "smpl_camera"
+      ],
+      "copy_fbx_to_3d": true,
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "sam3dbody",
+      "label": "SAM3DBody",
+      "module": "components.sam3dbody",
+      "nodes_package": "nodes",
+      "source": "PGCRT/ComfyUI-SAM3DBody_OB",
+      "startup": "lazy",
+      "viewers": [
+        "fbx"
+      ],
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "pixal3d",
+      "label": "Pixal3D",
+      "module": "components.pixal3d",
+      "nodes_package": "nodes",
+      "source": "PozzettiAndrea/ComfyUI-Pixal3D",
+      "startup": "lazy",
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "gaussianpack",
+      "label": "GaussianPack",
+      "module": "components.gaussianpack",
+      "nodes_package": "nodes",
+      "source": "PozzettiAndrea/ComfyUI-GaussianPack",
+      "startup": "direct"
+    },
+    {
+      "id": "hymotion",
+      "label": "HY-Motion",
+      "module": "components.hymotion",
+      "nodes_package": "nodes",
+      "source": "PGCRT/ComfyUI-HY-Motion1_OB",
+      "startup": "lazy",
+      "web": "static"
+    },
+    {
+      "id": "camerapack",
+      "label": "CameraPack",
+      "module": "components.camerapack",
+      "nodes_file": "nodes.py",
+      "startup": "direct"
+    },
+    {
+      "id": "multiband",
+      "label": "Multiband",
+      "module": "components.multiband",
+      "nodes_package": "nodes",
+      "startup": "direct"
+    },
+    {
+      "id": "geometrypack",
+      "label": "GeometryPack",
+      "module": "components.geometrypack",
+      "nodes_package": "nodes",
+      "startup": "lazy",
+      "env_configs": [
+        "nodes/blender/comfy-env.toml",
+        "nodes/gpu/comfy-env.toml",
+        "nodes/main/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "skintokens",
+      "label": "SkinTokens",
+      "module": "components.skintokens",
+      "nodes_package": "nodes",
+      "source": "PGCRT/SkinTokens_OpenBlender",
+      "startup": "lazy",
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "lito",
+      "label": "LiTo",
+      "module": "components.lito",
+      "nodes_package": "nodes",
+      "startup": "lazy",
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "depthanythingv3",
+      "label": "DepthAnythingV3",
+      "module": "components.depthanythingv3",
+      "nodes_package": "nodes",
+      "source": "PozzettiAndrea/ComfyUI-DepthAnythingV3",
+      "startup": "lazy",
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    },
+    {
+      "id": "moge2",
+      "label": "MoGe2",
+      "module": "components.moge2",
+      "nodes_package": "nodes",
+      "source": "PozzettiAndrea/ComfyUI-MoGe2",
+      "startup": "lazy",
+      "env_configs": [
+        "nodes/comfy-env.toml"
+      ]
+    }
+  ],
+  "policy": {
+    "component_node_reqs": false,
+    "component_installers": false,
+    "single_root_installer": true,
+    "startup_installs": false,
+    "lazy_component_registration": true,
+    "degraded_pixal3d_fallback_allowed": true
+  }
+}

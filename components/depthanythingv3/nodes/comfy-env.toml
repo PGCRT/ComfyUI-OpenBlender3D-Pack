@@ -1,0 +1,8 @@
+python = "3.11"
+
+[options]
+shared_env_name = "openblender"
+health_check_timeout = 15
+
+[pypi-dependencies]
+e3nn = ">=0.5.0"

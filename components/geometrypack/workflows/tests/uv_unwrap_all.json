@@ -1,0 +1,1550 @@
+{
+  "id": "test-uv-unwrap-all-0001",
+  "revision": 0,
+  "last_node_id": 23,
+  "last_link_id": 30,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -800,
+        0
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackLoadMesh",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        -784.6251772512281,
+        359.42269916962255
+      ],
+      "size": [
+        370,
+        182
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 6
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            22
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 8,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        -784.8731147276324,
+        132.4400345232251
+      ],
+      "size": [
+        370,
+        158
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 7
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            23
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 10,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        -796.9919492162304,
+        784.6332800179155
+      ],
+      "size": [
+        370,
+        134
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 9
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            24
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 15,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        -386.53478902951,
+        356.45979517811406
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 22
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 16,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        -380.00030506661045,
+        -92.41560473988542
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 23
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 17,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        -383.98949364611246,
+        796.1526743602467
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 24
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 6,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        283.2013306100092,
+        -103.59297932364527
+      ],
+      "size": [
+        370,
+        134
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 5
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            25
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 2,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        284.42464019020474,
+        361.21098850110144
+      ],
+      "size": [
+        370,
+        110
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 1
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            26
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 3,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        272.7272727272723,
+        795.867768595041
+      ],
+      "size": [
+        370,
+        206
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 2
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            27
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 20,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        679.4285292358016,
+        786.3033996758919
+      ],
+      "size": [
+        600,
+        378.0000000000001
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 27
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 18,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        676.8832338524041,
+        346.61052049375905
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 26
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 19,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        683.4177178153037,
+        -102.26487942424012
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 25
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 21,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        1771.8835959234673,
+        800.9237862335377
+      ],
+      "size": [
+        600,
+        378.0000000000001
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 30
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 22,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        1769.33830054007,
+        361.23090705140487
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 29
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 23,
+      "type": "GeomPackPreviewMeshUV",
+      "pos": [
+        1775.8727845029696,
+        -87.64449286659429
+      ],
+      "size": [
+        600,
+        378.00000000000006
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 28
+        },
+        {
+          "name": "show_checker",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_checker",
+          "widget": {
+            "name": "show_checker"
+          }
+        },
+        {
+          "name": "show_wireframe",
+          "type": "BOOLEAN",
+          "link": null,
+          "localized_name": "show_wireframe",
+          "widget": {
+            "name": "show_wireframe"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackPreviewMeshUV",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        false,
+        true,
+        null,
+        null
+      ]
+    },
+    {
+      "id": 4,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        1358.3199999999986,
+        -97.7225000000002
+      ],
+      "size": [
+        370,
+        110
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 3
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            28
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 5,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        1359.720538214599,
+        358.3201345536506
+      ],
+      "size": [
+        370,
+        110
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 4
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            29
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 9,
+      "type": "GeomPackUVUnwrap",
+      "pos": [
+        1351.0953027457135,
+        781.174932723175
+      ],
+      "size": [
+        370,
+        158
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 8
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "unwrapped_mesh",
+          "name": "unwrapped_mesh",
+          "type": "TRIMESH",
+          "links": [
+            30
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "224d843d5a35546212d1fb7babe30efabdf2116c",
+        "Node name for S&R": "GeomPackUVUnwrap",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        {
+          "backend": "xatlas"
+        },
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "TRIMESH"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "TRIMESH"
+    ],
+    [
+      3,
+      1,
+      0,
+      4,
+      0,
+      "TRIMESH"
+    ],
+    [
+      4,
+      1,
+      0,
+      5,
+      0,
+      "TRIMESH"
+    ],
+    [
+      5,
+      1,
+      0,
+      6,
+      0,
+      "TRIMESH"
+    ],
+    [
+      6,
+      1,
+      0,
+      7,
+      0,
+      "TRIMESH"
+    ],
+    [
+      7,
+      1,
+      0,
+      8,
+      0,
+      "TRIMESH"
+    ],
+    [
+      8,
+      1,
+      0,
+      9,
+      0,
+      "TRIMESH"
+    ],
+    [
+      9,
+      1,
+      0,
+      10,
+      0,
+      "TRIMESH"
+    ],
+    [
+      22,
+      7,
+      0,
+      15,
+      0,
+      "TRIMESH"
+    ],
+    [
+      23,
+      8,
+      0,
+      16,
+      0,
+      "TRIMESH"
+    ],
+    [
+      24,
+      10,
+      0,
+      17,
+      0,
+      "TRIMESH"
+    ],
+    [
+      25,
+      6,
+      0,
+      19,
+      0,
+      "TRIMESH"
+    ],
+    [
+      26,
+      2,
+      0,
+      18,
+      0,
+      "TRIMESH"
+    ],
+    [
+      27,
+      3,
+      0,
+      20,
+      0,
+      "TRIMESH"
+    ],
+    [
+      28,
+      4,
+      0,
+      23,
+      0,
+      "TRIMESH"
+    ],
+    [
+      29,
+      5,
+      0,
+      22,
+      0,
+      "TRIMESH"
+    ],
+    [
+      30,
+      9,
+      0,
+      21,
+      0,
+      "TRIMESH"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.3005259203606313,
+      "offset": [
+        1298.407624260146,
+        1388.2207731753158
+      ]
+    },
+    "frontendVersion": "1.30.6",
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

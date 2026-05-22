@@ -1,0 +1,10 @@
+{
+  "params": {
+    "video":      { "node": "525", "input": "video" },
+    "megapixels": { "node": "116", "input": "MegaPixels (override)" },
+    "FirstFrame": { "node": "527", "input": "image" },
+    "prompt":     { "node": "116", "input": "prompt" }
+  },
+  "seed_nodes": [],
+  "output_node": "88"
+}

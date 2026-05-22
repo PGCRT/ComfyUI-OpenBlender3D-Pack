@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Gaussian Splat Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #viewerContainer {
+            position: relative;
+            flex: 1;
+            min-height: 200px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #ff6b6b;
+            padding: 20px;
+            max-width: 80%;
+        }
+
+        .error.hidden {
+            display: none;
+        }
+
+        #controlsBar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            background: #252525;
+            padding: 8px 12px;
+            border-top: 1px solid #333;
+            flex-shrink: 0;
+        }
+
+        #controlsBar button {
+            background: #444;
+            border: none;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        #controlsBar button:hover {
+            background: #555;
+        }
+
+        .view-axes {
+            display: inline-flex;
+            gap: 2px;
+            padding: 2px 4px;
+            background: #1f1f1f;
+            border-radius: 4px;
+        }
+
+        .view-axes .view-btn {
+            background: #333;
+            color: #ddd;
+            font-family: monospace;
+            font-size: 11px;
+            min-width: 30px;
+            padding: 4px 6px;
+        }
+
+        .view-axes .view-btn:hover {
+            background: #4a6;
+            color: #fff;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #aaa;
+            font-size: 11px;
+            font-family: monospace;
+            z-index: 50;
+        }
+
+        .info-panel.hidden {
+            display: none;
+        }
+
+        #settingsPanel {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(20,20,20,0.92);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 10px 12px;
+            min-width: 220px;
+            z-index: 60;
+            font-size: 11px;
+            color: #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #settingsPanel.hidden { display: none; }
+
+        #settingsPanel .row {
+            display: grid;
+            grid-template-columns: 70px 1fr 48px;
+            gap: 6px;
+            align-items: center;
+        }
+
+        #settingsPanel .row label { color: #888; }
+        #settingsPanel .row input[type="range"] { width: 100%; }
+        #settingsPanel .row input[type="number"] {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            width: 100%;
+        }
+
+        #settingsPanel .panel-title {
+            font-weight: 600;
+            color: #ccc;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+    </style>
+
+    <!-- ES-module import map so Spark can find `three` -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./js/three.module.min.js",
+            "three/addons/controls/OrbitControls.js": "./js/OrbitControls.js",
+            "three/addons/controls/TrackballControls.js": "./js/TrackballControls.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="viewerContainer">
+        <canvas id="canvas"></canvas>
+
+        <div id="error" class="error hidden"></div>
+
+        <div id="infoPanel" class="info-panel hidden">
+            <div id="infoContent"></div>
+        </div>
+
+        <div id="settingsPanel" class="hidden">
+            <div class="panel-title">Settings</div>
+            <div class="row">
+                <label for="fovInput">FOV</label>
+                <input type="range" id="fovRange" min="5" max="170" step="1" value="50">
+                <input type="number" id="fovInput" min="5" max="170" step="1" value="50">
+            </div>
+            <div class="row">
+                <label for="scaleInput">Scale</label>
+                <input type="range" id="scaleRange" min="1" max="50" step="0.5" value="20">
+                <input type="number" id="scaleInput" min="1" max="50" step="0.5" value="20">
+            </div>
+            <div class="row">
+                <label for="opacityInput">Opacity</label>
+                <input type="range" id="opacityRange" min="0.05" max="1" step="0.01" value="1.0">
+                <input type="number" id="opacityInput" min="0.05" max="1" step="0.01" value="1.0">
+            </div>
+        </div>
+    </div>
+
+    <div id="controlsBar">
+        <button id="settingsBtn" title="Settings">&#9881; Settings</button>
+        <span class="view-axes">
+            <button class="view-btn" data-axis="x" data-sign="1"  title="View along +X (looks at YZ plane)">+X</button>
+            <button class="view-btn" data-axis="x" data-sign="-1" title="View along &minus;X">&minus;X</button>
+            <button class="view-btn" data-axis="y" data-sign="1"  title="View along +Y (looks at XZ plane)">+Y</button>
+            <button class="view-btn" data-axis="y" data-sign="-1" title="View along &minus;Y">&minus;Y</button>
+            <button class="view-btn" data-axis="z" data-sign="1"  title="View along +Z (looks at XY plane)">+Z</button>
+            <button class="view-btn" data-axis="z" data-sign="-1" title="View along &minus;Z">&minus;Z</button>
+        </span>
+        <button id="resetCamera" title="Reset camera view">Reset View</button>
+        <button id="screenshot" title="Take screenshot">Screenshot</button>
+    </div>
+
+    <script type="module">
+    // ============================================================
+    // Gaussian Splat Viewer — Spark (Three.js + WebGL2)
+    //
+    // Renderer is @sparkjsdev/spark — auto-detects file format
+    // (PLY / compressed.ply / SPZ / SPLAT / KSPLAT / SOG / ZIP / RAD)
+    // from header bytes, and preserves SH3 better than mkkellogg's
+    // SPZ-quantized path.
+    //
+    // The renderer dropdown still has a `webgpu` option; for now it
+    // logs a fallback warning and uses Spark (WebGL2). A real
+    // PlayCanvas WebGPU adapter is a follow-up.
+    // ============================================================
+
+    import * as THREE from 'three';
+    // TrackballControls: ParaView-style free rotation (no fixed up vector,
+    // no gimbal lock at poles, supports roll). OrbitControls kept its
+    // azimuth/up constraints which felt locked when looking from below.
+    import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+    import { SparkRenderer, SplatMesh } from './js/spark.module.min.js';
+
+    // Lazy <script> loader for non-module bundles (PlayCanvas).
+    const _loaded = new Set();
+    function loadScript(src) {
+        if (_loaded.has(src)) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src; s.async = false;
+            s.onload  = () => { _loaded.add(src); resolve(); };
+            s.onerror = () => reject(new Error("Failed to load " + src));
+            document.head.appendChild(s);
+        });
+    }
+
+    const canvas        = document.getElementById('canvas');
+    const errorEl       = document.getElementById('error');
+    const infoPanel     = document.getElementById('infoPanel');
+    const infoContent   = document.getElementById('infoContent');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsBtn   = document.getElementById('settingsBtn');
+    const fovRange      = document.getElementById('fovRange');
+    const fovInput      = document.getElementById('fovInput');
+    const scaleRange    = document.getElementById('scaleRange');
+    const scaleInput    = document.getElementById('scaleInput');
+    const opacityRange  = document.getElementById('opacityRange');
+    const opacityInput  = document.getElementById('opacityInput');
+
+    canvas.tabIndex = 0;
+    canvas.style.outline = "none";
+    canvas.addEventListener('pointerdown', () => canvas.focus({ preventScroll: true }));
+
+    function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.remove('hidden');
+        console.error('[GaussianViewer]', msg);
+    }
+
+    // ---- shared viewer state ------------------------------------
+    let adapter        = null;
+    let adapterReady   = false;
+    let pendingRestore = null;
+    let currentFovDeg  = 50;
+    let currentScale   = 20.0;
+    let currentOpacity = 1.0;
+    let initialPose    = null;
+
+    function setFovInputs(v)     { fovRange.value = v;     fovInput.value = v; }
+    function setScaleInputs(v)   { scaleRange.value = v;   scaleInput.value = v; }
+    function setOpacityInputs(v) { opacityRange.value = v; opacityInput.value = v; }
+
+    // ============================================================
+    // Base: Three.js scene + camera + WebGLRenderer + TrackballControls
+    // ============================================================
+    class ThreeBaseAdapter {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.scene = null;
+            this.camera = null;
+            this.renderer = null;
+            this.controls = null;
+            this.splatMesh = null;
+            this._frameCount = 0;
+            this._raf = null;
+        }
+        _initThree(logTag) {
+            const W = this.canvas.clientWidth  || 512;
+            const H = this.canvas.clientHeight || 512;
+            const dpr = window.devicePixelRatio || 1;
+            console.log(`[${logTag}] init: canvas client=${W}x${H} dpr=${dpr.toFixed(2)}`);
+            let renderer;
+            try {
+                renderer = new THREE.WebGLRenderer({
+                    canvas: this.canvas,
+                    antialias: false,
+                    alpha: false,
+                    preserveDrawingBuffer: true,
+                });
+            } catch (err) {
+                const msg = "WebGL context creation refused — reload the ComfyUI tab once "
+                          + "(Chrome anti-DoS guard). Detail: " + (err?.message || err);
+                console.error(`[${logTag}] FATAL:`, msg);
+                showError(msg);
+                try {
+                    window.parent.postMessage({ type: "MESH_ERROR", error: msg, timestamp: Date.now() }, "*");
+                } catch (_) {}
+                throw err;
+            }
+            renderer.setPixelRatio(dpr);
+            renderer.setSize(W, H, false);
+            renderer.setClearColor(0x1a1a1a, 1.0);
+            this.renderer = renderer;
+
+            this.canvas.addEventListener("webglcontextlost", (e) => {
+                e.preventDefault();
+                console.warn(`[${logTag}] WebGL context LOST`);
+                try {
+                    window.parent.postMessage({
+                        type: "MESH_ERROR",
+                        error: "WebGL context lost; will retry on restore.",
+                        timestamp: Date.now(),
+                    }, "*");
+                } catch (_) {}
+            });
+            this.canvas.addEventListener("webglcontextrestored", () => {
+                console.log(`[${logTag}] WebGL context RESTORED`);
+            });
+
+            this.scene = new THREE.Scene();
+            this.camera = new THREE.PerspectiveCamera(50, W / Math.max(1, H), 0.05, 1000);
+            this.camera.position.set(0, 0, -3);
+            this.camera.lookAt(0, 0, 0);
+
+            this.controls = new TrackballControls(this.camera, this.canvas);
+            // ParaView-ish tuning: snappier rotate, modest pan speed.
+            this.controls.rotateSpeed = 3.5;
+            this.controls.zoomSpeed = 1.2;
+            this.controls.panSpeed = 0.8;
+            this.controls.staticMoving = true;     // no inertia drift
+            this.controls.dynamicDampingFactor = 0.15;
+            this.controls.target.set(0, 0, 0);
+            this.controls.update();
+
+            const ro = new ResizeObserver(() => {
+                const w = this.canvas.clientWidth  || 1;
+                const h = this.canvas.clientHeight || 1;
+                renderer.setSize(w, h, false);
+                this.camera.aspect = w / Math.max(1, h);
+                this.camera.updateProjectionMatrix();
+                // TrackballControls maps mouse pixels to NDC against a cached
+                // screen rect — must be refreshed after each resize.
+                this.controls.handleResize();
+            });
+            ro.observe(this.canvas);
+        }
+        _startRenderLoop(logTag) {
+            const tick = () => {
+                this._raf = requestAnimationFrame(tick);
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+                this._frameCount += 1;
+                if (this._frameCount === 1) console.log(`[${logTag}] first frame rendered.`);
+            };
+            tick();
+        }
+        getCameraPosition() {
+            const p = this.camera.position;
+            return { x: p.x, y: p.y, z: p.z };
+        }
+        setCameraPosition(x, y, z) { this.camera.position.set(x, y, z); }
+        getCameraTarget() {
+            const t = this.controls.target;
+            return { x: t.x, y: t.y, z: t.z };
+        }
+        setCameraTarget(x, y, z) {
+            this.controls.target.set(x, y, z);
+            this.controls.update();
+        }
+        setFov(deg) {
+            this.camera.fov = deg;
+            this.camera.updateProjectionMatrix();
+        }
+        screenshot() {
+            this.renderer.render(this.scene, this.camera);
+            return this.renderer.domElement.toDataURL("image/png");
+        }
+    }
+
+    // ============================================================
+    // Adapter: Spark — best SH3 fidelity, all formats
+    // ============================================================
+    class SparkAdapter extends ThreeBaseAdapter {
+        constructor(canvas) {
+            super(canvas);
+            this.sparkRenderer = null;
+        }
+        kind() { return "spark"; }
+
+        init() {
+            this._initThree("Spark");
+            // SparkRenderer is itself a THREE.Mesh — adding it to the scene
+            // hooks its onBeforeRender for per-frame splat sort / LOD work.
+            this.sparkRenderer = new SparkRenderer({ renderer: this.renderer });
+            this.scene.add(this.sparkRenderer);
+            this._startRenderLoop("Spark");
+        }
+
+        async loadSplat(blobUrl, filename) {
+            // Replace any existing scene.
+            if (this.splatMesh) {
+                console.log("[Spark] removing existing SplatMesh before reload");
+                this.scene.remove(this.splatMesh);
+                try { this.splatMesh.dispose(); } catch (_) {}
+                this.splatMesh = null;
+            }
+
+            console.log(`[Spark] new SplatMesh url=${filename}`);
+            const t0 = performance.now();
+            const splatMesh = new SplatMesh({
+                url: blobUrl,
+                fileName: filename,    // hint for Spark's format sniff (also reads bytes)
+                onProgress: (e) => {
+                    if (e?.total) {
+                        const pct = (e.loaded / e.total) * 100;
+                        if (Math.floor(pct) % 10 === 0) {
+                            console.log(`[Spark] parse ${pct.toFixed(0)}%`);
+                        }
+                    }
+                },
+            });
+            this.scene.add(splatMesh);
+            await splatMesh.initialized;
+            this.splatMesh = splatMesh;
+
+            const dt = performance.now() - t0;
+            console.log(`[Spark] loaded ${splatMesh.numSplats} splats in ${dt.toFixed(0)} ms`);
+        }
+
+        getBounds() {
+            if (!this.splatMesh) return null;
+            let bbox;
+            try { bbox = this.splatMesh.getBoundingBox(true); } catch (e) {
+                console.warn("[Spark] getBoundingBox failed:", e?.message);
+                return null;
+            }
+            if (!bbox || bbox.isEmpty()) return null;
+            const min = bbox.min, max = bbox.max;
+            return {
+                center: { x: (min.x + max.x) / 2, y: (min.y + max.y) / 2, z: (min.z + max.z) / 2 },
+                size:   { x: max.x - min.x,       y: max.y - min.y,       z: max.z - min.z },
+            };
+        }
+
+        // Spark per-mesh splatScale / splatOpacity multipliers.
+        setScaleMultiplier(f) {
+            if (this.splatMesh) this.splatMesh.splatScale = f / 20.0;
+        }
+        setOpacityMultiplier(f) {
+            if (this.splatMesh) this.splatMesh.splatOpacity = f;
+        }
+    }
+
+    // ============================================================
+    // Adapter: PlayCanvas Engine — WebGPU (TODO real impl)
+    // ============================================================
+    class PlayCanvasAdapter {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this._fallback = null;
+        }
+        kind() { return "playcanvas-fallback"; }
+        async init() {
+            console.warn("[PlayCanvas] adapter not yet implemented; falling back to Spark.");
+            this._fallback = new SparkAdapter(this.canvas);
+            this._fallback.init();
+        }
+        async loadSplat(u, f) { return this._fallback.loadSplat(u, f); }
+        getBounds()           { return this._fallback.getBounds(); }
+        getCameraPosition()   { return this._fallback.getCameraPosition(); }
+        setCameraPosition(x,y,z) { return this._fallback.setCameraPosition(x,y,z); }
+        getCameraTarget()     { return this._fallback.getCameraTarget(); }
+        setCameraTarget(x,y,z){ return this._fallback.setCameraTarget(x,y,z); }
+        setFov(d)             { return this._fallback.setFov(d); }
+        setScaleMultiplier(f) { return this._fallback.setScaleMultiplier(f); }
+        setOpacityMultiplier(f){ return this._fallback.setOpacityMultiplier(f); }
+        screenshot()          { return this._fallback.screenshot(); }
+        get scene()           { return this._fallback?.scene; }
+        get camera()          { return this._fallback?.camera; }
+        get renderer()        { return this._fallback?.renderer; }
+        get splatMesh()       { return this._fallback?.splatMesh; }
+        get _frameCount()     { return this._fallback?._frameCount; }
+    }
+
+    async function bootRenderer(kind) {
+        if (kind === "playcanvas") return new PlayCanvasAdapter(canvas);
+        // Default + any unknown value -> Spark.
+        return new SparkAdapter(canvas);
+    }
+
+    // ============================================================
+    // Camera helpers, framing, persistence
+    // ============================================================
+    let _lastEmitted = "";
+    function emitCameraState() {
+        if (!adapterReady) return;
+        const p = adapter.getCameraPosition();
+        const t = adapter.getCameraTarget();
+        const state = {
+            v: 1,
+            pos:    [p.x, p.y, p.z],
+            target: [t.x, t.y, t.z],
+            fov:    currentFovDeg,
+            scale:  currentScale,
+            opacity: currentOpacity,
+        };
+        const s = JSON.stringify(state);
+        if (s === _lastEmitted) return;
+        _lastEmitted = s;
+        try { window.parent.postMessage({ type: "CAMERA_STATE", state }, "*"); }
+        catch (_) {}
+    }
+
+    function applyCameraState(state) {
+        if (!adapterReady || !state) return;
+        if (Array.isArray(state.pos)) {
+            adapter.setCameraPosition(state.pos[0], state.pos[1], state.pos[2]);
+        }
+        if (Array.isArray(state.target)) {
+            adapter.setCameraTarget(state.target[0], state.target[1], state.target[2]);
+        }
+        if (typeof state.fov === "number") {
+            currentFovDeg = state.fov;
+            setFovInputs(state.fov);
+            adapter.setFov(state.fov);
+        }
+        if (typeof state.scale === "number") {
+            currentScale = state.scale;
+            setScaleInputs(state.scale);
+            adapter.setScaleMultiplier(state.scale);
+        }
+        if (typeof state.opacity === "number") {
+            currentOpacity = state.opacity;
+            setOpacityInputs(state.opacity);
+            adapter.setOpacityMultiplier(state.opacity);
+        }
+        console.log("[GaussianViewer] Restored camera state from workflow");
+    }
+
+    function frameOnBounds(fovDeg) {
+        const b = adapter.getBounds();
+        if (!b) {
+            console.warn("[GaussianViewer] frameOnBounds: getBounds() returned null — nothing to frame.");
+            return;
+        }
+        console.log(`[GaussianViewer] frameOnBounds: bounds center=(${b.center.x.toFixed(3)}, ${b.center.y.toFixed(3)}, ${b.center.z.toFixed(3)}) size=(${b.size.x.toFixed(3)}, ${b.size.y.toFixed(3)}, ${b.size.z.toFixed(3)})`);
+        currentFovDeg = fovDeg;
+        adapter.setFov(fovDeg);
+
+        const maxExtent = Math.max(b.size.x, b.size.y, b.size.z);
+        const fovRad = fovDeg * Math.PI / 180;
+        const radius = Math.max(0.1, (maxExtent / 2) / Math.tan(fovRad / 2) * 1.15);
+
+        adapter.setCameraPosition(b.center.x, b.center.y, b.center.z - radius);
+        adapter.setCameraTarget(b.center.x, b.center.y, b.center.z);
+
+        initialPose = {
+            pos:    [b.center.x, b.center.y, b.center.z - radius],
+            target: [b.center.x, b.center.y, b.center.z],
+            fov:    fovDeg,
+        };
+        const pp = adapter.getCameraPosition();
+        const pt = adapter.getCameraTarget();
+        console.log(`[GaussianViewer] Framed: cam=(${pp.x.toFixed(2)}, ${pp.y.toFixed(2)}, ${pp.z.toFixed(2)}) target=(${pt.x.toFixed(2)}, ${pt.y.toFixed(2)}, ${pt.z.toFixed(2)}) maxExtent=${maxExtent.toFixed(2)} radius=${radius.toFixed(2)} fov=${fovDeg}`);
+        emitCameraState();
+    }
+
+    function viewAlongAxis(axis, sign) {
+        const b = adapter.getBounds();
+        if (!b) return;
+        const maxExtent = Math.max(b.size.x, b.size.y, b.size.z);
+        const fovRad = currentFovDeg * Math.PI / 180;
+        const radius = Math.max(0.1, (maxExtent / 2) / Math.tan(fovRad / 2) * 1.5);
+        const off = { x: 0, y: 0, z: 0 };
+        off[axis] = sign * radius;
+        adapter.setCameraPosition(b.center.x + off.x, b.center.y + off.y, b.center.z + off.z);
+        adapter.setCameraTarget(b.center.x, b.center.y, b.center.z);
+        console.log('[GaussianViewer] view along', (sign > 0 ? '+' : '-') + axis.toUpperCase());
+        emitCameraState();
+    }
+
+    function resetCamera() {
+        if (!initialPose) return;
+        const { pos, target, fov } = initialPose;
+        currentFovDeg = fov;
+        setFovInputs(fov);
+        adapter.setFov(fov);
+        adapter.setCameraPosition(pos[0], pos[1], pos[2]);
+        adapter.setCameraTarget(target[0], target[1], target[2]);
+        emitCameraState();
+    }
+
+    function updateFov(v) {
+        v = Math.max(5, Math.min(170, parseFloat(v) || 50));
+        currentFovDeg = v;
+        setFovInputs(v);
+        if (adapterReady) {
+            const b = adapter.getBounds();
+            if (b) frameOnBounds(v); else { adapter.setFov(v); emitCameraState(); }
+        }
+    }
+    function updateGaussianScale(v) {
+        v = Math.max(0.1, Math.min(100, parseFloat(v) || 1.0));
+        currentScale = v;
+        setScaleInputs(v);
+        if (adapterReady) adapter.setScaleMultiplier(v);
+        emitCameraState();
+    }
+    function updateOpacity(v) {
+        v = Math.max(0, Math.min(1, parseFloat(v) || 1.0));
+        currentOpacity = v;
+        setOpacityInputs(v);
+        if (adapterReady) adapter.setOpacityMultiplier(v);
+        emitCameraState();
+    }
+
+    // ============================================================
+    // Bootstrap on first LOAD_MESH_DATA
+    // ============================================================
+    let _bootPromise = null;
+    async function ensureRenderer(kind) {
+        if (!_bootPromise) {
+            _bootPromise = (async () => {
+                adapter = await bootRenderer(kind);
+                await adapter.init();
+                adapterReady = true;
+                console.log("[GaussianViewer] Adapter ready:", adapter.kind());
+            })();
+        }
+        await _bootPromise;
+    }
+
+    async function loadPLYFromData(arrayBuffer, filename, extrinsics, intrinsics, renderer) {
+        try {
+            console.log(`[GaussianViewer] ensureRenderer('${renderer || 'webgl2'}') starting...`);
+            await ensureRenderer(renderer || "webgl2");
+
+            const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+            const blobUrl = URL.createObjectURL(blob);
+            try {
+                console.log(`[GaussianViewer] Loading splat (${arrayBuffer.byteLength.toLocaleString()} bytes) via ${adapter.kind()}...`);
+                const tLoad0 = performance.now();
+                await adapter.loadSplat(blobUrl, filename);
+                console.log(`[GaussianViewer] adapter.loadSplat resolved in ${(performance.now()-tLoad0).toFixed(0)} ms`);
+            } finally {
+                URL.revokeObjectURL(blobUrl);
+            }
+
+            let fovDeg = currentFovDeg;
+            if (intrinsics && Array.isArray(intrinsics) && intrinsics.length >= 2) {
+                const fy = intrinsics[1][1];
+                const cy = intrinsics[1][2];
+                const h  = cy * 2;
+                fovDeg = 2 * Math.atan(h / (2 * fy)) * 180 / Math.PI;
+            }
+            fovDeg = Math.max(20, Math.min(120, fovDeg));
+            setFovInputs(fovDeg);
+            frameOnBounds(fovDeg);
+
+            adapter.setScaleMultiplier(currentScale);
+            adapter.setOpacityMultiplier(currentOpacity);
+
+            if (pendingRestore) {
+                applyCameraState(pendingRestore);
+                pendingRestore = null;
+            }
+
+            infoPanel.classList.remove('hidden');
+            infoContent.innerHTML =
+                '<span style="color:#6cc;">Gaussian Splat Loaded</span><br>'
+                + `<span style="color:#888;">${filename || ''}</span>`;
+
+            window.parent.postMessage({
+                type: 'MESH_LOADED', error: null, timestamp: Date.now(),
+            }, '*');
+            console.log('[GaussianViewer] Loaded successfully');
+        } catch (err) {
+            console.error('[GaussianViewer] Load error:', err);
+            showError('Failed to load splat: ' + (err?.message || err));
+            window.parent.postMessage({
+                type: 'MESH_ERROR', error: String(err?.message || err), timestamp: Date.now(),
+            }, '*');
+        }
+    }
+
+    // ============================================================
+    // Wiring
+    // ============================================================
+    fovRange.addEventListener('input',  e => updateFov(e.target.value));
+    fovInput.addEventListener('change', e => updateFov(e.target.value));
+    scaleRange.addEventListener('input',  e => updateGaussianScale(e.target.value));
+    scaleInput.addEventListener('change', e => updateGaussianScale(e.target.value));
+    opacityRange.addEventListener('input',  e => updateOpacity(e.target.value));
+    opacityInput.addEventListener('change', e => updateOpacity(e.target.value));
+
+    settingsBtn.addEventListener('click', () => settingsPanel.classList.toggle('hidden'));
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            viewAlongAxis(btn.dataset.axis, parseInt(btn.dataset.sign, 10));
+        });
+    });
+
+    document.getElementById('resetCamera').addEventListener('click', resetCamera);
+    document.getElementById('screenshot').addEventListener('click', () => {
+        if (!adapterReady) return;
+        try {
+            window.parent.postMessage({
+                type: 'SCREENSHOT',
+                image: adapter.screenshot(),
+                timestamp: Date.now(),
+            }, '*');
+            console.log('[GaussianViewer] Screenshot captured');
+        } catch (err) {
+            console.error('[GaussianViewer] Screenshot error:', err);
+        }
+    });
+
+    canvas.addEventListener('pointerup',  () => emitCameraState());
+    canvas.addEventListener('wheel',      () => emitCameraState(), { passive: true });
+
+    // Receive from parent
+    window.addEventListener('message', (event) => {
+        const msg = event.data || {};
+        if (msg.type === 'LOAD_MESH_DATA' && msg.data) {
+            console.log('[GaussianViewer] Received LOAD_MESH_DATA, size:',
+                        msg.data.byteLength, 'renderer:', msg.renderer);
+            loadPLYFromData(msg.data, msg.filename || 'gaussian.ply',
+                            msg.extrinsics, msg.intrinsics, msg.renderer);
+        } else if (msg.type === 'RESTORE_CAMERA_STATE' && msg.state) {
+            if (adapterReady) applyCameraState(msg.state);
+            else              pendingRestore = msg.state;
+        }
+    });
+
+    console.log('[GaussianViewer] Ready — waiting for LOAD_MESH_DATA');
+
+    // -------- Debug hooks (headless Playwright drives these) -----
+    window.__gs = {
+        state() {
+            return {
+                adapterReady,
+                adapterKind: adapter && adapter.kind && adapter.kind(),
+                splatCount: adapter?.splatMesh?.numSplats ?? 0,
+                cameraPos: adapter ? adapter.getCameraPosition() : null,
+                cameraTarget: adapter ? adapter.getCameraTarget() : null,
+                fov: currentFovDeg,
+                frames: adapter && adapter._frameCount,
+            };
+        },
+        run(fnSrc) {
+            const fn = new Function('adapter', 'splatMesh', 'THREE', 'scene', 'camera', 'renderer', fnSrc);
+            return fn(
+                adapter,
+                adapter && adapter.splatMesh,
+                THREE,
+                adapter && adapter.scene,
+                adapter && adapter.camera,
+                adapter && adapter.renderer,
+            );
+        },
+    };
+    </script>
+</body>
+</html>

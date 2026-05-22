@@ -1,0 +1,366 @@
+"""
+MotionCapture Extract Rest Pose Node
+Extract skeleton rest pose from FBX or SMPL parameters, output as FBX.
+
+Blender operations run in an isolated environment with the bpy package.
+"""
+
+import os
+import logging
+import numpy as np
+from pathlib import Path
+from typing import Tuple
+
+from comfy_api.latest import io
+
+try:
+    import folder_paths
+except ImportError:
+    folder_paths = None
+
+log = logging.getLogger("motioncapture")
+
+# SMPL canonical skeleton (24 joints)
+SMPL_JOINT_NAMES = [
+    "Pelvis", "L_Hip", "R_Hip", "Spine1", "L_Knee", "R_Knee",
+    "Spine2", "L_Ankle", "R_Ankle", "Spine3", "L_Foot", "R_Foot",
+    "Neck", "L_Collar", "R_Collar", "Head", "L_Shoulder", "R_Shoulder",
+    "L_Elbow", "R_Elbow", "L_Wrist", "R_Wrist", "L_Hand", "R_Hand"
+]
+
+SMPL_PARENTS = [
+    -1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 20, 21
+]
+
+# T-pose canonical positions (Y-up, meters, ~1.7m height)
+SMPL_REST_POSITIONS = np.array([
+    [0.0, 0.0, 0.0],        # 0 Pelvis
+    [0.09, -0.065, 0.0],    # 1 L_Hip
+    [-0.09, -0.065, 0.0],   # 2 R_Hip
+    [0.0, 0.09, 0.0],       # 3 Spine1
+    [0.09, -0.49, 0.0],     # 4 L_Knee
+    [-0.09, -0.49, 0.0],    # 5 R_Knee
+    [0.0, 0.20, 0.0],       # 6 Spine2
+    [0.09, -0.87, 0.0],     # 7 L_Ankle
+    [-0.09, -0.87, 0.0],    # 8 R_Ankle
+    [0.0, 0.32, 0.0],       # 9 Spine3
+    [0.09, -0.92, 0.12],    # 10 L_Foot
+    [-0.09, -0.92, 0.12],   # 11 R_Foot
+    [0.0, 0.46, 0.0],       # 12 Neck
+    [0.06, 0.40, 0.0],      # 13 L_Collar
+    [-0.06, 0.40, 0.0],     # 14 R_Collar
+    [0.0, 0.57, 0.0],       # 15 Head
+    [0.18, 0.40, 0.0],      # 16 L_Shoulder
+    [-0.18, 0.40, 0.0],     # 17 R_Shoulder
+    [0.45, 0.40, 0.0],      # 18 L_Elbow
+    [-0.45, 0.40, 0.0],     # 19 R_Elbow
+    [0.70, 0.40, 0.0],      # 20 L_Wrist
+    [-0.70, 0.40, 0.0],     # 21 R_Wrist
+    [0.78, 0.40, 0.0],      # 22 L_Hand
+    [-0.78, 0.40, 0.0],     # 23 R_Hand
+], dtype=np.float32)
+
+
+# ===============================================================================
+# ISOLATED BLENDER WORKERS
+# ===============================================================================
+
+class RestPoseFromFBXWorker:
+    """
+    Isolated worker for extracting rest pose from FBX using bpy.
+    Runs in the mocap isolated environment with bpy package.
+    """
+
+    FUNCTION = "extract_from_fbx"
+
+    def extract_from_fbx(self, input_fbx: str, output_fbx: str) -> int:
+        """Extract rest pose from FBX file."""
+        import bpy
+        from mathutils import Quaternion
+
+        log.info("Extracting rest pose from: %s", input_fbx)
+
+        # Clean scene
+        bpy.ops.wm.read_homefile(use_empty=True)
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete()
+
+        # Import FBX
+        bpy.ops.import_scene.fbx(filepath=input_fbx)
+
+        # Find armature
+        armature = None
+        for obj in bpy.context.scene.objects:
+            if obj.type == 'ARMATURE':
+                armature = obj
+                break
+
+        if not armature:
+            raise RuntimeError("No armature found in FBX file")
+
+        bone_count = len(armature.data.bones)
+        log.info("Found armature with %d bones", bone_count)
+
+        # Clear animation data
+        if armature.animation_data:
+            armature.animation_data_clear()
+
+        # Reset bones to rest pose
+        bpy.context.view_layer.objects.active = armature
+        bpy.ops.object.mode_set(mode='POSE')
+
+        for bone in armature.pose.bones:
+            bone.rotation_mode = 'QUATERNION'
+            bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
+            bone.location = (0, 0, 0)
+            bone.scale = (1, 1, 1)
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Export FBX
+        import os
+        os.makedirs(os.path.dirname(output_fbx), exist_ok=True)
+        bpy.ops.export_scene.fbx(
+            filepath=output_fbx,
+            use_selection=False,
+            bake_anim=False,
+            add_leaf_bones=True,
+        )
+
+        return bone_count
+
+
+class SMPLSkeletonWorker:
+    """
+    Isolated worker for creating SMPL skeleton FBX using bpy.
+    Runs in the mocap isolated environment with bpy package.
+    """
+
+    FUNCTION = "create_smpl_skeleton"
+
+    def create_smpl_skeleton(
+        self,
+        joint_positions_list: list,
+        joint_names: list,
+        parent_indices: list,
+        output_path: str,
+    ) -> int:
+        """Create SMPL skeleton FBX from joint positions."""
+        import bpy
+        import math
+        import numpy as np
+        from mathutils import Vector
+
+        joint_positions = np.array(joint_positions_list, dtype=np.float32)
+
+        log.info("Creating SMPL skeleton with %d joints", len(joint_names))
+
+        # Clean scene
+        bpy.ops.wm.read_homefile(use_empty=True)
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete()
+
+        # Convert from Y-up (SMPL standard) to Z-up (Blender standard)
+        # Y-up: X=right, Y=up, Z=forward
+        # Z-up: X=right, Y=forward, Z=up
+        # Conversion: (x, y, z) -> (x, -z, y)
+        def yup_to_zup(pos):
+            return Vector((pos[0], -pos[2], pos[1]))
+
+        joint_positions_zup = np.array([
+            [p[0], -p[2], p[1]] for p in joint_positions
+        ], dtype=np.float32)
+
+        # Scale to centimeters (like Mixamo) for better visibility
+        scale_factor = 100.0
+        joint_positions_zup *= scale_factor
+
+        # Create armature
+        armature_data = bpy.data.armatures.new("SMPL_Armature")
+        armature_obj = bpy.data.objects.new("SMPL_Skeleton", armature_data)
+        bpy.context.scene.collection.objects.link(armature_obj)
+        bpy.context.view_layer.objects.active = armature_obj
+
+        # Enter edit mode
+        bpy.ops.object.mode_set(mode='EDIT')
+        edit_bones = armature_data.edit_bones
+        bones_by_name = {}
+
+        for i, (name, pos) in enumerate(zip(joint_names, joint_positions_zup)):
+            bone = edit_bones.new(name)
+            head = Vector(pos.tolist())
+
+            # Find children for tail direction
+            children_indices = [j for j, p in enumerate(parent_indices) if p == i]
+
+            if children_indices:
+                # Special case: for Pelvis (root), point toward Spine1, not average of hips+spine
+                # This avoids the "triangle" artifact where Pelvis points down toward hips
+                if name == "Pelvis" and "Spine1" in joint_names:
+                    spine_idx = joint_names.index("Spine1")
+                    tail = Vector(joint_positions_zup[spine_idx].tolist())
+                else:
+                    child_positions = joint_positions_zup[children_indices]
+                    avg_child = np.mean(child_positions, axis=0)
+                    tail = Vector(avg_child.tolist())
+                if (tail - head).length < 1.0:  # Adjusted for cm scale
+                    tail = head + Vector((0, 0, 5.0))
+            else:
+                parent_idx = parent_indices[i]
+                if parent_idx >= 0:
+                    parent_pos = Vector(joint_positions_zup[parent_idx].tolist())
+                    direction = head - parent_pos
+                    if direction.length > 0.1:
+                        direction.normalize()
+                        tail = head + direction * 5.0
+                    else:
+                        tail = head + Vector((0, 0, 5.0))
+                else:
+                    tail = head + Vector((0, 0, 10.0))
+
+            bone.head = head
+            bone.tail = tail
+            bones_by_name[name] = bone
+
+        # Set parents (but don't use connected - SMPL joints are at absolute positions)
+        for i, (name, parent_idx) in enumerate(zip(joint_names, parent_indices)):
+            if parent_idx >= 0:
+                parent_name = joint_names[parent_idx]
+                bones_by_name[name].parent = bones_by_name[parent_name]
+                # Don't set use_connect - bones are at their own positions
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Apply 90-degree X rotation like Mixamo does for FBX Y-up convention
+        armature_obj.rotation_euler[0] = math.radians(90)
+
+        # Apply scale (0.01 to convert cm back to meters in FBX)
+        armature_obj.scale = (0.01, 0.01, 0.01)
+
+        # Export with proper settings
+        import os
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        bpy.ops.export_scene.fbx(
+            filepath=output_path,
+            use_selection=False,
+            bake_anim=False,
+            add_leaf_bones=True,
+            apply_scale_options='FBX_SCALE_ALL',
+        )
+
+        return len(joint_names)
+
+
+# ===============================================================================
+# COMFYUI NODE
+# ===============================================================================
+
+class ExtractRestPose(io.ComfyNode):
+    """
+    Extract skeleton rest pose from FBX file or SMPL parameters.
+
+    Outputs an FBX file path containing the skeleton in T-pose,
+    compatible with CompareSkeletons for side-by-side comparison.
+
+    For FBX source: Imports FBX, strips all animation data, exports T-pose
+    For SMPL source: Creates armature from canonical SMPL joint positions
+    """
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="ExtractRestPose",
+            display_name="Extract Rest Pose",
+            category="OpenBlender/MotionCapture/Skeleton",
+            inputs=[
+                io.Combo.Input("source_type", options=["fbx", "smpl"], default="fbx",
+                               tooltip="Source type: FBX file or SMPL parameters"),
+                io.String.Input("output_name", default="rest_pose",
+                                tooltip="Output filename (without extension)"),
+                io.String.Input("fbx_path", default="",
+                                tooltip="Path to input FBX file (when source_type=fbx)",
+                                optional=True),
+                io.String.Input("npz_path", default="",
+                                tooltip="Path to SMPL params .npz file (when source_type=smpl)",
+                                optional=True),
+            ],
+            outputs=[
+                io.String.Output(display_name="fbx_path"),
+                io.String.Output(display_name="info"),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        source_type: str,
+        output_name: str,
+        fbx_path: str = "",
+        npz_path: str = "",
+    ) -> io.NodeOutput:
+        """Extract rest pose skeleton and save as FBX."""
+        log.info("Source type: %s", source_type)
+
+        # Setup output path
+        if folder_paths:
+            output_dir = folder_paths.get_output_directory()
+        else:
+            output_dir = "output"
+            os.makedirs(output_dir, exist_ok=True)
+
+        if not output_name.endswith('.fbx'):
+            output_name_fbx = f"{output_name}.fbx"
+        else:
+            output_name_fbx = output_name
+        output_path = os.path.join(output_dir, output_name_fbx)
+
+        if source_type == "fbx":
+            # Validate FBX path
+            if not fbx_path:
+                raise ValueError("fbx_path is required when source_type=fbx")
+
+            # Handle relative paths
+            if not os.path.isabs(fbx_path):
+                if folder_paths:
+                    input_dir = folder_paths.get_input_directory()
+                    if os.path.exists(os.path.join(input_dir, fbx_path)):
+                        fbx_path = os.path.join(input_dir, fbx_path)
+                    elif os.path.exists(os.path.join(output_dir, fbx_path)):
+                        fbx_path = os.path.join(output_dir, fbx_path)
+
+            if not os.path.exists(fbx_path):
+                raise FileNotFoundError(f"FBX file not found: {fbx_path}")
+
+            log.info("Input FBX: %s", fbx_path)
+
+            # Extract rest pose from FBX using isolated worker
+            worker = RestPoseFromFBXWorker()
+            bone_count = worker.extract_from_fbx(fbx_path, output_path)
+            source_info = f"FBX: {os.path.basename(fbx_path)}"
+
+        else:  # smpl
+            log.info("Creating SMPL rest pose skeleton")
+
+            # Use canonical SMPL positions - convert to list for serialization
+            joint_positions_list = SMPL_REST_POSITIONS.tolist()
+
+            # Create SMPL skeleton using isolated worker
+            worker = SMPLSkeletonWorker()
+            bone_count = worker.create_smpl_skeleton(
+                joint_positions_list=joint_positions_list,
+                joint_names=SMPL_JOINT_NAMES,
+                parent_indices=SMPL_PARENTS,
+                output_path=output_path,
+            )
+            source_info = "SMPL canonical T-pose"
+
+        log.info("Output: %s", output_path)
+        log.info("Bones: %d", bone_count)
+
+        info = (
+            f"Source: {source_info}\n"
+            f"Bones: {bone_count}\n"
+            f"Output: {output_name_fbx}"
+        )
+
+        return io.NodeOutput(output_path, info)

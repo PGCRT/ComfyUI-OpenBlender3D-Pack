@@ -1,0 +1,242 @@
+{
+  "id": "smpl-bvh-vroid-pipeline",
+  "revision": 1,
+  "last_node_id": 11,
+  "last_link_id": 7,
+  "nodes": [
+    {
+      "id": 3,
+      "type": "BVHViewer",
+      "pos": [
+        659.2632339007574,
+        -13.03246000000014
+      ],
+      "size": [
+        400,
+        720
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "bvh_data",
+          "name": "bvh_data",
+          "type": "BVH_DATA",
+          "link": 7
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-motioncapture",
+        "ver": "5fb550a9fdd709693e02ded817bae55ae7b9a461",
+        "Node name for S&R": "BVHViewer"
+      },
+      "widgets_values": [
+        null,
+        null
+      ]
+    },
+    {
+      "id": 11,
+      "type": "LoadSMPL",
+      "pos": [
+        -33.59586104270254,
+        29.966429138211396
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "STRING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-motioncapture",
+        "ver": "5fb550a9fdd709693e02ded817bae55ae7b9a461",
+        "Node name for S&R": "LoadSMPL"
+      },
+      "widgets_values": [
+        "smpl_params_example.npz"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "SMPLtoBVH",
+      "pos": [
+        302.767747577681,
+        3.299767095420207
+      ],
+      "size": [
+        270,
+        170
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "npz_path",
+          "name": "npz_path",
+          "type": "STRING",
+          "widget": {
+            "name": "npz_path"
+          },
+          "link": 6
+        },
+        {
+          "name": "filename",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "filename"
+          }
+        },
+        {
+          "name": "fps",
+          "type": "INT",
+          "link": null,
+          "localized_name": "fps",
+          "widget": {
+            "name": "fps"
+          }
+        },
+        {
+          "name": "scale",
+          "type": "FLOAT",
+          "link": null,
+          "localized_name": "scale",
+          "widget": {
+            "name": "scale"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "bvh_data",
+          "name": "bvh_data",
+          "type": "BVH_DATA",
+          "links": [
+            7
+          ]
+        },
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-motioncapture",
+        "ver": "5fb550a9fdd709693e02ded817bae55ae7b9a461",
+        "Node name for S&R": "SMPLtoBVH"
+      },
+      "widgets_values": [
+        "",
+        "motion.bvh",
+        30,
+        1.0,
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      6,
+      11,
+      0,
+      10,
+      0,
+      "STRING"
+    ],
+    [
+      7,
+      10,
+      0,
+      3,
+      0,
+      "BVH_DATA"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9090909090909091,
+      "offset": [
+        -57.61021805885997,
+        342.2729601773071
+      ]
+    },
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}

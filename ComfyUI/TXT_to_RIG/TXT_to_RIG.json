@@ -1,0 +1,96 @@
+{
+  "4": {
+    "inputs": {
+      "model_name": "HY-Motion-1.0"
+    },
+    "class_type": "HYMotionLoadNetwork",
+    "_meta": {
+      "title": "HY-Motion Load Network"
+    }
+  },
+  "5": {
+    "inputs": {
+      "duration": [
+        "14",
+        0
+      ],
+      "seed": 275340347,
+      "cfg_scale": 5,
+      "num_samples": 1,
+      "network": [
+        "4",
+        0
+      ],
+      "conditioning": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "HYMotionGenerate",
+    "_meta": {
+      "title": "HY-Motion Generate"
+    }
+  },
+  "8": {
+    "inputs": {
+      "output_dir": "OpenBlender_RIG",
+      "filename_prefix": "motion",
+      "custom_fbx_path": "",
+      "yaw_offset": 0,
+      "scale": 0,
+      "motion_data": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "HYMotionExportFBX",
+    "_meta": {
+      "title": "HY-Motion Export FBX"
+    }
+  },
+  "10": {
+    "inputs": {
+      "text": [
+        "13",
+        0
+      ],
+      "llm": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "HYMotionEncodeText",
+    "_meta": {
+      "title": "HY-Motion Encode Text"
+    }
+  },
+  "12": {
+    "inputs": {
+      "model_name": "Qwen3-8B-bnb-4bit",
+      "quantization": "bnb-4bit",
+      "offload_to_cpu": false
+    },
+    "class_type": "HYMotionLoadLLM",
+    "_meta": {
+      "title": "HY-Motion Load LLM"
+    }
+  },
+  "13": {
+    "inputs": {
+      "text": ""
+    },
+    "class_type": "CRT_Textbox",
+    "_meta": {
+      "title": "Prompt"
+    }
+  },
+  "14": {
+    "inputs": {
+      "value": 12
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Duration"
+    }
+  }
+}

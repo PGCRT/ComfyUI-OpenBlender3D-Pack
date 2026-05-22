@@ -1,0 +1,13 @@
+[project]
+name = "ComfyUI-SAM3DBody"
+description = "SAM 3D Body integration for ComfyUI. Robust full-body human mesh recovery from single images"
+version = "0.2.4"
+license = {file = "LICENSE"}
+
+[tool.comfy]
+PublisherId = "pznodes"
+DisplayName = "SAM3DBody"
+Icon = ""
+
+[project.urls]
+Repository = "https://github.com/PozzettiAndrea/ComfyUI-SAM3DBody"

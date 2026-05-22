@@ -1,0 +1,11 @@
+{
+  "params": {
+    "megapixels": { "node": "116", "input": "MegaPixels (override)" },
+    "length":     { "node": "116", "input": "Frames (override)" },
+    "prompt":     { "node": "116", "input": "prompt" },
+    "width":      { "node": "116", "input": "Width T2V (override)" },
+    "height":     { "node": "116", "input": "Height T2V (override)" }
+  },
+  "seed_nodes": [],
+  "output_node": "88"
+}

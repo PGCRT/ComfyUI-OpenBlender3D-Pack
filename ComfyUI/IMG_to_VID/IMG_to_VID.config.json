@@ -1,0 +1,13 @@
+{
+  "params": {
+    "image":      { "node": "506", "input": "image" },
+    "megapixels": { "node": "116", "input": "MegaPixels (override)" },
+    "length":     { "node": "116", "input": "Frames (override)" },
+    "prompt":     { "node": "116", "input": "prompt" }
+  },
+  "image_nodes": {
+    "image": { "node": "506", "input": "image" }
+  },
+  "seed_nodes": [],
+  "output_node": "88"
+}

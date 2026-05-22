@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>HY-Motion Animation Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #1a1a2e;
+            font-family: monospace;
+            width: 100%;
+            height: 100vh;
+        }
+        #viewerContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            z-index: 10;
+        }
+        #controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            border-top: 1px solid #444;
+            padding: 10px;
+            color: white;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+            max-height: 35%;
+            overflow-y: auto;
+        }
+        #controls button {
+            background: #4a4a6a;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        #controls button:hover { background: #5a5a7a; }
+        #controls button:active { background: #3a3a5a; }
+        #controls button.active { background: #6a6aaa; }
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        #status { color: #888; font-size: 11px; }
+        #timeline {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #timeline::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #6af;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        #frameInfo { min-width: 100px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div id="viewerContainer">
+        <canvas id="canvas"></canvas>
+        <div id="loading">Ready to load motion data</div>
+    </div>
+
+    <div id="controls">
+        <div><strong>HY-Motion Animation Viewer</strong></div>
+        <div class="control-group">
+            <input type="range" id="timeline" min="0" max="100" value="0">
+            <span id="frameInfo">0 / 0</span>
+        </div>
+        <div class="control-group">
+            <button id="playPause">Play</button>
+            <button id="resetAnim">Reset</button>
+            <label class="checkbox-label">
+                <input type="checkbox" id="loopAnim" checked>
+                <span>Loop</span>
+            </label>
+            <label class="checkbox-label">
+                <span>Speed:</span>
+                <select id="playbackSpeed" style="background:#333;color:white;border:1px solid #555;padding:2px;">
+                    <option value="0.25">0.25x</option>
+                    <option value="0.5">0.5x</option>
+                    <option value="1" selected>1x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x</option>
+                </select>
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="showSkeleton" checked>
+                <span>Skeleton</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" id="showMesh" checked>
+                <span>Mesh</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" id="showGrid" checked>
+                <span>Grid</span>
+            </label>
+        </div>
+        <div class="control-group">
+            <button id="resetCamera">Reset Camera</button>
+            <button id="exportGLB">Export GLB</button>
+        </div>
+        <div id="status">No motion loaded</div>
+    </div>
+
+    <script src="/extensions/ComfyUI-HY-Motion1/static/three/viewer-bundle.js"></script>
+    <script>
+        const THREE = window.THREE;
+        const OrbitControls = window.OrbitControls;
+        const GLTFExporter = window.GLTFExporter;
+
+        console.log('[HY-Motion Viewer] Initializing...');
+
+        const canvas = document.getElementById('canvas');
+        const loading = document.getElementById('loading');
+        const statusEl = document.getElementById('status');
+        const timelineEl = document.getElementById('timeline');
+        const frameInfoEl = document.getElementById('frameInfo');
+
+        // Scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100);
+        camera.position.set(2, 1.5, 2);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const controls = new OrbitControls(camera, canvas);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 0.8, 0);
+
+        // Lighting
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+
+        // Grid
+        let grid = new THREE.GridHelper(4, 20, 0x444466, 0x222244);
+        scene.add(grid);
+
+        // State
+        let skinnedMesh = null;
+        let skeleton = null;
+        let skeletonHelper = null;
+        let mixer = null;
+        let animationClip = null;
+        let animationAction = null;
+        let clock = new THREE.Clock();
+        let isPlaying = false;
+        let totalFrames = 0;
+        let fps = 30;
+        let parentOrigin = null;
+        let modelData = null;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            if (mixer && isPlaying) {
+                mixer.update(delta);
+                updateTimelineFromMixer();
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        function updateTimelineFromMixer() {
+            if (!animationAction || !animationClip) return;
+            const currentTime = animationAction.time;
+            const duration = animationClip.duration;
+            timelineEl.value = (currentTime / duration) * 100;
+            frameInfoEl.textContent = `${Math.floor(currentTime * fps)} / ${totalFrames}`;
+        }
+
+        // Handle resize with proper container dimensions
+        function handleResize() {
+            const container = document.getElementById('viewerContainer');
+            const width = container ? container.clientWidth : window.innerWidth;
+            const height = container ? container.clientHeight : window.innerHeight;
+            if (width > 0 && height > 0) {
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+        }
+
+        // Handle browser window resize
+        window.addEventListener('resize', handleResize);
+
+        // Load model data
+        async function loadModelData(baseUrl) {
+            console.log('[HY-Motion Viewer] Loading model data from:', baseUrl);
+            const files = ['v_template.bin', 'j_template.bin', 'skinWeights.bin', 'skinIndice.bin', 'kintree.bin', 'faces.bin', 'joint_names.json'];
+            const data = {};
+            for (const file of files) {
+                const url = `${baseUrl}/${file}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${file}`);
+                if (file.endsWith('.json')) {
+                    data[file.replace('.json', '')] = await response.json();
+                } else {
+                    data[file.replace('.bin', '')] = await response.arrayBuffer();
+                }
+            }
+            return {
+                vertices: new Float32Array(data.v_template),
+                joints: new Float32Array(data.j_template),
+                weights: new Float32Array(data.skinWeights),
+                indices: new Uint16Array(data.skinIndice),
+                parents: new Int32Array(data.kintree),
+                faces: new Uint16Array(data.faces),
+                jointNames: data.joint_names
+            };
+        }
+
+        // Build skeleton
+        function buildSkeleton(joints, parents, jointNames) {
+            const numJoints = joints.length / 3;
+            const bones = [];
+            for (let i = 0; i < numJoints; i++) {
+                const bone = new THREE.Bone();
+                bone.name = jointNames[i] || `joint_${i}`;
+                bones.push(bone);
+            }
+            for (let i = 0; i < numJoints; i++) {
+                const parentIdx = parents[i];
+                const pos = new THREE.Vector3(joints[i * 3], joints[i * 3 + 1], joints[i * 3 + 2]);
+                if (parentIdx >= 0 && parentIdx < numJoints) {
+                    bones[parentIdx].add(bones[i]);
+                    const parentPos = new THREE.Vector3(joints[parentIdx * 3], joints[parentIdx * 3 + 1], joints[parentIdx * 3 + 2]);
+                    pos.sub(parentPos);
+                }
+                bones[i].position.copy(pos);
+            }
+            return new THREE.Skeleton(bones);
+        }
+
+        // Build skinned mesh
+        function buildSkinnedMesh(modelData) {
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(modelData.vertices, 3));
+            geometry.setIndex(new THREE.BufferAttribute(modelData.faces, 1));
+            geometry.computeVertexNormals();
+
+            const numVerts = modelData.vertices.length / 3;
+            const skinWeights = new Float32Array(numVerts * 4);
+            const skinIndices = new Float32Array(numVerts * 4);
+            for (let i = 0; i < numVerts; i++) {
+                for (let j = 0; j < 4; j++) {
+                    skinWeights[i * 4 + j] = modelData.weights[i * 4 + j];
+                    skinIndices[i * 4 + j] = modelData.indices[i * 4 + j];
+                }
+            }
+            geometry.setAttribute('skinWeight', new THREE.BufferAttribute(skinWeights, 4));
+            geometry.setAttribute('skinIndex', new THREE.BufferAttribute(skinIndices, 4));
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xccaa88,
+                metalness: 0.1,
+                roughness: 0.8,
+                side: THREE.DoubleSide
+            });
+
+            skeleton = buildSkeleton(modelData.joints, modelData.parents, modelData.jointNames);
+            const mesh = new THREE.SkinnedMesh(geometry, material);
+            mesh.add(skeleton.bones[0]);
+            mesh.bind(skeleton);
+            return mesh;
+        }
+
+        // Create animation clip from quaternion data (from Python backend)
+        function createAnimationClip(motionData) {
+            const { quaternions, transl, num_frames, num_joints } = motionData;
+            fps = motionData.fps || 30;
+            totalFrames = num_frames;
+            const duration = num_frames / fps;
+            const tracks = [];
+            const times = [];
+            for (let f = 0; f < num_frames; f++) {
+                times.push(f / fps);
+            }
+
+            // Root translation track
+            const rootPositions = [];
+            for (let f = 0; f < num_frames; f++) {
+                rootPositions.push(transl[f * 3], transl[f * 3 + 1], transl[f * 3 + 2]);
+            }
+            tracks.push(new THREE.VectorKeyframeTrack(
+                `${skeleton.bones[0].name}.position`,
+                times,
+                rootPositions
+            ));
+
+            // Rotation tracks - quaternions from Python are [w, x, y, z], Three.js uses [x, y, z, w]
+            for (let j = 0; j < num_joints; j++) {
+                const quats = [];
+                for (let f = 0; f < num_frames; f++) {
+                    const offset = (f * num_joints + j) * 4;
+                    // Python: [w, x, y, z] -> Three.js: [x, y, z, w]
+                    const w = quaternions[offset];
+                    const x = quaternions[offset + 1];
+                    const y = quaternions[offset + 2];
+                    const z = quaternions[offset + 3];
+                    quats.push(x, y, z, w);
+                }
+                tracks.push(new THREE.QuaternionKeyframeTrack(
+                    `${skeleton.bones[j].name}.quaternion`,
+                    times,
+                    quats
+                ));
+            }
+            return new THREE.AnimationClip('motion', duration, tracks);
+        }
+
+        // Load motion
+        async function loadMotion(motionData) {
+            console.log('[HY-Motion Viewer] Loading motion data...');
+            loading.textContent = 'Loading motion...';
+            loading.style.display = 'block';
+
+            try {
+                if (!modelData) {
+                    const baseUrl = parentOrigin
+                        ? `${parentOrigin}/extensions/ComfyUI-HY-Motion1/static/dump_wooden`
+                        : '/extensions/ComfyUI-HY-Motion1/static/dump_wooden';
+                    modelData = await loadModelData(baseUrl);
+                    console.log('[HY-Motion Viewer] Model loaded:', modelData.jointNames.length, 'joints');
+                }
+
+                // Clean up
+                if (skinnedMesh) {
+                    scene.remove(skinnedMesh);
+                    skinnedMesh.geometry.dispose();
+                    skinnedMesh.material.dispose();
+                }
+                if (skeletonHelper) scene.remove(skeletonHelper);
+                if (mixer) mixer.stopAllAction();
+
+                // Build mesh
+                skinnedMesh = buildSkinnedMesh(modelData);
+                scene.add(skinnedMesh);
+
+                // Skeleton helper
+                skeletonHelper = new THREE.SkeletonHelper(skinnedMesh);
+                skeletonHelper.material.linewidth = 2;
+                scene.add(skeletonHelper);
+
+                // Animation
+                animationClip = createAnimationClip(motionData);
+                mixer = new THREE.AnimationMixer(skinnedMesh);
+                animationAction = mixer.clipAction(animationClip);
+                animationAction.setLoop(THREE.LoopRepeat);
+
+                loading.style.display = 'none';
+                statusEl.textContent = `Loaded: ${totalFrames} frames @ ${fps}fps`;
+                console.log('[HY-Motion Viewer] Motion loaded');
+
+            } catch (error) {
+                console.error('[HY-Motion Viewer] Error:', error);
+                loading.textContent = 'Error: ' + error.message;
+                loading.style.color = '#f66';
+            }
+        }
+
+        // UI Controls
+        document.getElementById('playPause').addEventListener('click', () => {
+            if (!animationAction) return;
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playPause');
+            if (isPlaying) {
+                animationAction.paused = false;
+                animationAction.play();
+                btn.textContent = 'Pause';
+                btn.classList.add('active');
+            } else {
+                animationAction.paused = true;
+                btn.textContent = 'Play';
+                btn.classList.remove('active');
+            }
+        });
+
+        document.getElementById('resetAnim').addEventListener('click', () => {
+            if (!animationAction) return;
+            animationAction.reset();
+            animationAction.paused = true;
+            isPlaying = false;
+            document.getElementById('playPause').textContent = 'Play';
+            document.getElementById('playPause').classList.remove('active');
+            updateTimelineFromMixer();
+        });
+
+        document.getElementById('loopAnim').addEventListener('change', (e) => {
+            if (!animationAction) return;
+            animationAction.setLoop(e.target.checked ? THREE.LoopRepeat : THREE.LoopOnce);
+            animationAction.clampWhenFinished = !e.target.checked;
+        });
+
+        document.getElementById('playbackSpeed').addEventListener('change', (e) => {
+            if (!animationAction) return;
+            animationAction.setEffectiveTimeScale(parseFloat(e.target.value));
+        });
+
+        timelineEl.addEventListener('input', (e) => {
+            if (!animationAction || !animationClip) return;
+            const progress = parseFloat(e.target.value) / 100;
+            animationAction.time = progress * animationClip.duration;
+            mixer.update(0);
+            frameInfoEl.textContent = `${Math.floor(animationAction.time * fps)} / ${totalFrames}`;
+        });
+
+        document.getElementById('showSkeleton').addEventListener('change', (e) => {
+            if (skeletonHelper) skeletonHelper.visible = e.target.checked;
+        });
+
+        document.getElementById('showMesh').addEventListener('change', (e) => {
+            if (skinnedMesh) skinnedMesh.visible = e.target.checked;
+        });
+
+        document.getElementById('showGrid').addEventListener('change', (e) => {
+            grid.visible = e.target.checked;
+        });
+
+        document.getElementById('resetCamera').addEventListener('click', () => {
+            camera.position.set(2, 1.5, 2);
+            controls.target.set(0, 0.8, 0);
+            controls.update();
+        });
+
+        // Export GLB
+        document.getElementById('exportGLB').addEventListener('click', async () => {
+            console.log('[HY-Motion Viewer] Export GLB clicked');
+
+            if (!skinnedMesh || !animationClip) {
+                statusEl.textContent = 'No animation to export';
+                console.log('[HY-Motion Viewer] No mesh or animation');
+                return;
+            }
+
+            const filename = prompt('Filename:', `hymotion_${Date.now()}.glb`);
+            if (!filename) {
+                console.log('[HY-Motion Viewer] Export cancelled');
+                return;
+            }
+
+            statusEl.textContent = 'Exporting...';
+            console.log('[HY-Motion Viewer] Starting export...');
+
+            try {
+                // Create export scene with the skinned mesh
+                const exportScene = new THREE.Scene();
+
+                // We need to export the original mesh, not a clone
+                // because clone() doesn't properly handle skeleton binding
+                skinnedMesh.animations = [animationClip];
+                exportScene.add(skinnedMesh);
+
+                const exporter = new GLTFExporter();
+                console.log('[HY-Motion Viewer] GLTFExporter created');
+
+                // Use parseAsync if available, otherwise use callback
+                const options = {
+                    binary: true,
+                    animations: [animationClip],
+                    includeCustomExtensions: true
+                };
+
+                console.log('[HY-Motion Viewer] Calling exporter.parse...');
+
+                exporter.parse(
+                    exportScene,
+                    function(gltf) {
+                        console.log('[HY-Motion Viewer] Export success, gltf type:', typeof gltf, 'size:', gltf.byteLength || gltf.length);
+
+                        // Create blob and download
+                        const blob = new Blob([gltf], { type: 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+
+                        // Download directly
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename.endsWith('.glb') ? filename : filename + '.glb';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+
+                        // Put mesh back in main scene
+                        scene.add(skinnedMesh);
+
+                        statusEl.textContent = `Downloaded: ${a.download}`;
+                        console.log('[HY-Motion Viewer] Download triggered');
+                    },
+                    function(error) {
+                        console.error('[HY-Motion Viewer] Export error in callback:', error);
+                        statusEl.textContent = 'Export error: ' + error.message;
+                        // Put mesh back in main scene
+                        scene.add(skinnedMesh);
+                    },
+                    options
+                );
+            } catch (error) {
+                console.error('[HY-Motion Viewer] Export error:', error);
+                statusEl.textContent = 'Export error: ' + error.message;
+                // Ensure mesh is back in scene
+                if (skinnedMesh && !scene.children.includes(skinnedMesh)) {
+                    scene.add(skinnedMesh);
+                }
+            }
+        });
+
+        // Message handling
+        window.addEventListener('message', (event) => {
+            if (!parentOrigin && event.origin) parentOrigin = event.origin;
+            if (event.data.type === 'LOAD_MOTION') {
+                loadMotion(event.data.motionData);
+            } else if (event.data.type === 'RESIZE') {
+                handleResize();
+            }
+        });
+
+        // Initial resize to handle iframe embedding
+        handleResize();
+        if (window.parent) {
+            window.parent.postMessage({ type: 'VIEWER_READY' }, '*');
+        }
+    </script>
+</body>
+</html>

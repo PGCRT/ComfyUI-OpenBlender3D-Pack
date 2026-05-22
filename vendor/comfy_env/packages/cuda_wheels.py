@@ -1,0 +1,154 @@
+"""CUDA wheels index integration. See: https://pozzettiandrea.github.io/cuda-wheels/"""
+
+import logging
+import re
+import sys
+import urllib.request
+from pathlib import Path
+from typing import List, Optional
+
+logger = logging.getLogger("comfy-env.cuda-wheels")
+
+CUDA_WHEELS_INDEX = "https://pozzettiandrea.github.io/cuda-wheels/"
+CUDA_TORCH_MAP = {"12.8": "2.8", "12.4": "2.4"}
+
+# Local wheels directory (repo-root/wheels) -- vendored CUDA wheels for offline install
+_LOCAL_WHEELS_DIR = Path(__file__).parents[3] / "wheels"
+
+
+def get_cuda_torch_mapping() -> dict:
+    return CUDA_TORCH_MAP.copy()
+
+
+def get_torch_version_for_cuda(cuda_version: str) -> Optional[str]:
+    return CUDA_TORCH_MAP.get(".".join(cuda_version.split(".")[:2]))
+
+
+def _pkg_variants(package: str) -> List[str]:
+    return [package, package.replace("-", "_"), package.replace("_", "-")]
+
+
+def _platform_tags() -> List[str]:
+    """Return platform tags to match against wheel filenames (most specific first)."""
+    if sys.platform.startswith("linux"):
+        return ["manylinux", "linux"]
+    if sys.platform == "win32":
+        return ["win_amd64"]
+    return []
+
+
+def get_wheel_url(package: str, torch_version: str, cuda_version: str, python_version: str) -> Optional[str]:
+    """Get direct URL to matching wheel from cuda-wheels index."""
+    cuda_short = cuda_version.replace(".", "")[:3]
+    torch_short = torch_version.replace(".", "")
+    py_tag = f"cp{python_version.replace('.', '')}"
+    platform_tags = _platform_tags()
+
+    local_patterns = [
+        f"+cu{cuda_short}torch{torch_short}",
+        f"+cu{cuda_short}torch{torch_version}",
+        f"+pt{torch_short}cu{cuda_short}",
+        f"+pt{torch_version}cu{cuda_short}",
+    ]
+    link_pattern = re.compile(r'href="([^"]+\.whl)"[^>]*>([^<]+)</a>', re.IGNORECASE)
+
+    logger.info(f"Looking up {package}: cu{cuda_short} torch{torch_short} {py_tag} {' '.join(platform_tags) or 'any'}")
+
+    # ---- Check vendored local wheels first ----
+    if _LOCAL_WHEELS_DIR.exists():
+        for whl in _LOCAL_WHEELS_DIR.iterdir():
+            if whl.suffix != ".whl":
+                continue
+            name = whl.name
+            pkg_match = any(name.startswith(v) for v in _pkg_variants(package))
+            if not pkg_match:
+                continue
+            if any(p in name for p in local_patterns) and py_tag in name:
+                if not platform_tags or any(t in name for t in platform_tags):
+                    logger.info(f"  Local wheel: {whl.name}")
+                    return whl.as_uri()
+    # -------------------------------------------
+
+    candidates = []
+    for pkg_dir in _pkg_variants(package):
+        index_url = f"{CUDA_WHEELS_INDEX}{pkg_dir}/"
+        try:
+            with urllib.request.urlopen(index_url, timeout=10) as resp:
+                html = resp.read().decode("utf-8")
+        except Exception as e:
+            logger.debug(f"  {index_url}: {e}")
+            continue
+
+        for match in link_pattern.finditer(html):
+            wheel_url, display = match.group(1), match.group(2)
+            if any(p in display for p in local_patterns) and py_tag in display:
+                if not platform_tags or any(t in display for t in platform_tags):
+                    url = wheel_url if wheel_url.startswith("http") else f"{CUDA_WHEELS_INDEX}{pkg_dir}/{wheel_url}"
+                    # Index may use dotless torch version (e.g. torch28) while the
+                    # actual release file uses dots (e.g. torch2.8). Normalise the URL.
+                    url = url.replace(f"torch{torch_short}", f"torch{torch_version}")
+                    candidates.append((url, display))
+
+    if candidates:
+        # Prefer manylinux wheels over plain linux
+        for url, display in candidates:
+            if "manylinux" in display:
+                logger.info(f"  Found: {display}")
+                return url
+        url, display = candidates[0]
+        logger.info(f"  Found: {display}")
+        return url
+
+    logger.info(f"  No matching wheel found")
+    return None
+
+
+def find_available_wheels(package: str) -> List[str]:
+    """List all available wheels for a package."""
+    wheels = []
+    link_pattern = re.compile(r'href="[^"]*?([^"/]+\.whl)"', re.IGNORECASE)
+    for pkg_dir in _pkg_variants(package):
+        try:
+            with urllib.request.urlopen(f"{CUDA_WHEELS_INDEX}{pkg_dir}/", timeout=10) as resp:
+                html = resp.read().decode("utf-8")
+            for match in link_pattern.finditer(html):
+                name = match.group(1).replace("%2B", "+")
+                if name not in wheels: wheels.append(name)
+        except Exception: continue
+    return wheels
+
+
+def find_matching_wheel(package: str, torch_version: str, cuda_version: str) -> Optional[str]:
+    """Find wheel matching CUDA/torch version, return version spec."""
+    cuda_short = cuda_version.replace(".", "")[:3]
+    torch_short = torch_version.replace(".", "")
+    local_patterns = [
+        f"+cu{cuda_short}torch{torch_short}",
+        f"+cu{cuda_short}torch{torch_version}",
+        f"+pt{torch_short}cu{cuda_short}",
+        f"+pt{torch_version}cu{cuda_short}",
+    ]
+    wheel_pattern = re.compile(r'href="[^"]*?([^"/]+\.whl)"', re.IGNORECASE)
+
+    for pkg_dir in _pkg_variants(package):
+        try:
+            with urllib.request.urlopen(f"{CUDA_WHEELS_INDEX}{pkg_dir}/", timeout=10) as resp:
+                html = resp.read().decode("utf-8")
+        except Exception: continue
+
+        best_match = best_version = None
+        for match in wheel_pattern.finditer(html):
+            wheel_name = match.group(1).replace("%2B", "+")
+            for local in local_patterns:
+                if local in wheel_name:
+                    parts = wheel_name.split("-")
+                    if len(parts) >= 2 and (best_version is None or parts[1] > best_version):
+                        best_version = parts[1]
+                        best_match = f"{package}==={parts[1]}"
+                    break
+        if best_match: return best_match
+    return None
+
+
+def get_find_links_urls(package: str) -> List[str]:
+    return [f"{CUDA_WHEELS_INDEX}{p}/" for p in _pkg_variants(package)]

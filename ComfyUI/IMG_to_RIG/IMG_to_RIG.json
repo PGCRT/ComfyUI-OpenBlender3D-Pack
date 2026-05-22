@@ -1,0 +1,116 @@
+{
+  "3": {
+    "inputs": {
+      "image": "masked_dancing.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "4": {
+    "inputs": {
+      "images": [
+        "13",
+        2
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "10": {
+    "inputs": {
+      "model_file": [
+        "27",
+        0
+      ],
+      "image": ""
+    },
+    "class_type": "Preview3D",
+    "_meta": {
+      "title": "Preview 3D & Animation"
+    }
+  },
+  "13": {
+    "inputs": {
+      "bbox_threshold": 0.8,
+      "inference_type": "full",
+      "model": [
+        "16",
+        0
+      ],
+      "image": [
+        "3",
+        0
+      ],
+      "mask": [
+        "21",
+        0
+      ]
+    },
+    "class_type": "SAM3DBodyProcess",
+    "_meta": {
+      "title": "SAM 3D Body: Process Image"
+    }
+  },
+  "16": {
+    "inputs": {
+      "precision": "fp32"
+    },
+    "class_type": "LoadSAM3DBodyModel",
+    "_meta": {
+      "title": "(Down)Load SAM 3D Body Model"
+    }
+  },
+  "19": {
+    "inputs": {
+      "prompt": "person",
+      "output_mode": "Merged",
+      "confidence_threshold": 0.5,
+      "max_segments": 0,
+      "segment_pick": 0,
+      "mask_blur": 0,
+      "mask_offset": 0,
+      "device": "Auto",
+      "invert_output": false,
+      "unload_model": false,
+      "background": "Alpha",
+      "background_color": "#222222",
+      "image": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "SAM3Segment",
+    "_meta": {
+      "title": "SAM3 Segmentation (RMBG)"
+    }
+  },
+  "21": {
+    "inputs": {
+      "mask": [
+        "19",
+        1
+      ]
+    },
+    "class_type": "InvertMask",
+    "_meta": {
+      "title": "InvertMask"
+    }
+  },
+  "27": {
+    "inputs": {
+      "output_filename": "sam3d_rigged.fbx",
+      "mesh_data": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "SAM3DBodyExportFBX",
+    "_meta": {
+      "title": "SAM 3D Body: Export FBX"
+    }
+  }
+}

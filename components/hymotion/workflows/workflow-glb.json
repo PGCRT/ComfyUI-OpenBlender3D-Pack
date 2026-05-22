@@ -1,0 +1,464 @@
+{
+  "id": "49fbd9ce-342c-4413-82b6-296fb9633dc5",
+  "revision": 0,
+  "last_node_id": 15,
+  "last_link_id": 16,
+  "nodes": [
+    {
+      "id": 4,
+      "type": "HYMotionLoadNetwork",
+      "pos": [
+        -4937.065352819321,
+        -3745.3979302512926
+      ],
+      "size": [
+        390.2604166666667,
+        50
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": [
+            "HY-Motion-1.0",
+            "HY-Motion-1.0-Lite"
+          ],
+          "link": null,
+          "widget": {
+            "name": "model_name"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "network",
+          "type": "HYMOTION_NET",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HYMotionLoadNetwork"
+      },
+      "widgets_values": [
+        "HY-Motion-1.0-Lite"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "HYMotionPreview",
+      "pos": [
+        -4313.555454484098,
+        -3675.6094795658682
+      ],
+      "size": [
+        270,
+        98
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "motion_data",
+          "type": "HYMOTION_DATA",
+          "link": 5
+        },
+        {
+          "name": "sample_index",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "sample_index"
+          }
+        },
+        {
+          "name": "frame_step",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "frame_step"
+          }
+        },
+        {
+          "name": "image_size",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "image_size"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HYMotionPreview"
+      },
+      "widgets_values": [
+        0,
+        5,
+        512
+      ]
+    },
+    {
+      "id": 5,
+      "type": "HYMotionGenerate",
+      "pos": [
+        -5141.659876260163,
+        -3154.674253175328
+      ],
+      "size": [
+        385.1041666666667,
+        166
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "network",
+          "type": "HYMOTION_NET",
+          "link": 3
+        },
+        {
+          "name": "conditioning",
+          "type": "HYMOTION_COND",
+          "link": 10
+        },
+        {
+          "name": "duration",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "duration"
+          }
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "seed"
+          }
+        },
+        {
+          "name": "cfg_scale",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "cfg_scale"
+          }
+        },
+        {
+          "name": "num_samples",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "num_samples"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "motion_data",
+          "type": "HYMOTION_DATA",
+          "links": [
+            5,
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HYMotionGenerate"
+      },
+      "widgets_values": [
+        3.0,
+        42,
+        5.0,
+        1
+      ]
+    },
+    {
+      "id": 10,
+      "type": "HYMotionEncodeText",
+      "pos": [
+        -4930.173696295045,
+        -3534.8740278243913
+      ],
+      "size": [
+        333.33333333333337,
+        76
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "llm",
+          "type": "HYMOTION_LLM",
+          "link": 16
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "conditioning",
+          "type": "HYMOTION_COND",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HYMotionEncodeText"
+      },
+      "widgets_values": [
+        "A person is walking forward."
+      ]
+    },
+    {
+      "id": 7,
+      "type": "PreviewImage",
+      "pos": [
+        -3736.9668653998256,
+        -3878.041788678644
+      ],
+      "size": [
+        311.640625,
+        1036.484375
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 6
+        },
+        {
+          "name": "prompt",
+          "type": "",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": [
+        null,
+        null
+      ]
+    },
+    {
+      "id": 15,
+      "type": "HYMotionLoadLLM",
+      "pos": [
+        -5413.870534770547,
+        -3507.0297606164486
+      ],
+      "size": [
+        270,
+        50
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": [
+            "Qwen3-8B",
+            "Qwen3-8B-bnb-4bit",
+            "Qwen3-8B-AWQ",
+            "Qwen3-4B",
+            "Qwen3-4B-bnb-4bit"
+          ],
+          "link": null,
+          "widget": {
+            "name": "model_name"
+          }
+        },
+        {
+          "name": "quantization",
+          "type": [
+            "none",
+            "int8",
+            "int4",
+            "bnb-4bit",
+            "awq"
+          ],
+          "link": null,
+          "widget": {
+            "name": "quantization"
+          }
+        },
+        {
+          "name": "offload_to_cpu",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "offload_to_cpu"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "llm",
+          "type": "HYMOTION_LLM",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HYMotionLoadLLM"
+      },
+      "widgets_values": [
+        "Qwen3-8B-bnb-4bit",
+        "none",
+        false
+      ]
+    },
+    {
+      "id": 14,
+      "type": "HYMotionPreviewAnimation",
+      "pos": [
+        -4495.588741966641,
+        -3452.0052944818926
+      ],
+      "size": [
+        426.6666666666667,
+        668.4
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "motion_data",
+          "type": "HYMOTION_DATA",
+          "link": 15
+        },
+        {
+          "name": "sample_index",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "sample_index"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "motion_data",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HYMotionPreviewAnimation"
+      },
+      "widgets_values": [
+        0
+      ]
+    }
+  ],
+  "links": [
+    [
+      3,
+      4,
+      0,
+      5,
+      0,
+      "HYMOTION_NET"
+    ],
+    [
+      5,
+      5,
+      0,
+      6,
+      0,
+      "HYMOTION_DATA"
+    ],
+    [
+      6,
+      6,
+      0,
+      7,
+      0,
+      "IMAGE"
+    ],
+    [
+      10,
+      10,
+      0,
+      5,
+      1,
+      "HYMOTION_COND"
+    ],
+    [
+      15,
+      5,
+      0,
+      14,
+      0,
+      "HYMOTION_DATA"
+    ],
+    [
+      16,
+      15,
+      0,
+      10,
+      0,
+      "HYMOTION_LLM"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7930537574400006,
+      "offset": [
+        5862.880331606104,
+        4022.967314255727
+      ]
+    },
+    "workflowRendererVersion": "LG",
+    "frontendVersion": "1.37.2",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

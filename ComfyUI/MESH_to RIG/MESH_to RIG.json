@@ -1,0 +1,57 @@
+{
+  "1": {
+    "inputs": {
+      "value": "examples/giraffe.glb"
+    },
+    "class_type": "PrimitiveString",
+    "_meta": {
+      "title": "Mesh Path"
+    }
+  },
+  "2": {
+    "inputs": {
+      "model_ckpt": "experiments/articulation_xl_quantization_256_token_4/grpo_1400.ckpt"
+    },
+    "class_type": "SkinTokensLoadModel",
+    "_meta": {
+      "title": "SkinTokens Load Model"
+    }
+  },
+  "4": {
+    "inputs": {
+      "model_file": [
+        "5",
+        0
+      ],
+      "image": ""
+    },
+    "class_type": "Preview3D",
+    "_meta": {
+      "title": "Preview 3D & Animation"
+    }
+  },
+  "5": {
+    "inputs": {
+      "mesh_path": [
+        "1",
+        0
+      ],
+      "top_k": 5,
+      "top_p": 0.95,
+      "temperature": 1,
+      "repetition_penalty": 2,
+      "num_beams": 10,
+      "use_skeleton": false,
+      "use_transfer": false,
+      "use_postprocess": false,
+      "model": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "SkinTokensRigMesh",
+    "_meta": {
+      "title": "SkinTokens Rig Mesh"
+    }
+  }
+}

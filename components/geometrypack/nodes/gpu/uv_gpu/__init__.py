@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 ComfyUI-GeometryPack Contributors
+
+"""GPU UV unwrapping backend nodes."""
+
+from .cumesh_uv import NODE_CLASS_MAPPINGS as CUMESH_MAPS, NODE_DISPLAY_NAME_MAPPINGS as CUMESH_DISP
+
+NODE_CLASS_MAPPINGS = {}
+NODE_DISPLAY_NAME_MAPPINGS = {}
+
+NODE_CLASS_MAPPINGS.update(CUMESH_MAPS)
+NODE_DISPLAY_NAME_MAPPINGS.update(CUMESH_DISP)
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

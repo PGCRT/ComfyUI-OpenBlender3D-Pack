@@ -1,0 +1,146 @@
+{
+  "47": {
+    "inputs": {
+      "images": [
+        "81",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "80": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "100",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Single Prompt"
+    }
+  },
+  "81": {
+    "inputs": {
+      "seed": 0,
+      "increment_seed": true,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "mode": "Sequential",
+      "image_megapixels": 1,
+      "edit_model_flux2klein": false,
+      "reference_mode": "per_item",
+      "enable_vae_decode": true,
+      "create_comparison_grid": false,
+      "save_images": false,
+      "save_folder_path": ".\\ComfyUI\\output",
+      "save_subfolder_name": "KSAMPLER_BATCH",
+      "save_filename_prefix": "output",
+      "model": [
+        "101",
+        0
+      ],
+      "vae": [
+        "102",
+        0
+      ],
+      "positive": [
+        "80",
+        0
+      ],
+      "latent_image": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "CRT_KSamplerBatch",
+    "_meta": {
+      "title": "KSampler Batch (CRT)"
+    }
+  },
+  "96": {
+    "inputs": {
+      "image": "bike.webp"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "97": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 1,
+      "resolution_steps": 1,
+      "image": [
+        "96",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "ImageScaleToTotalPixels"
+    }
+  },
+  "98": {
+    "inputs": {
+      "width": [
+        "99",
+        0
+      ],
+      "height": [
+        "99",
+        1
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Empty Flux 2 Latent"
+    }
+  },
+  "99": {
+    "inputs": {
+      "image": [
+        "97",
+        0
+      ]
+    },
+    "class_type": "GetImageSize",
+    "_meta": {
+      "title": "Get Image Size"
+    }
+  },
+  "100": {
+    "inputs": {},
+    "class_type": "CRTAutoDLZImageTurboCLIP",
+    "_meta": {
+      "title": "ZImageTurbo CLIP"
+    }
+  },
+  "101": {
+    "inputs": {
+      "patch_cublaslinear": false,
+      "sage_attention": "auto",
+      "enable_fp16_accumulation": true
+    },
+    "class_type": "CRTAutoDLZImageTurboModel",
+    "_meta": {
+      "title": "ZImageTurbo Model"
+    }
+  },
+  "102": {
+    "inputs": {},
+    "class_type": "CRTAutoDLZImageTurboVAE",
+    "_meta": {
+      "title": "ZImageTurbo VAE"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+python = "3.11"
+
+[options]
+shared_env_name = "openblender"
+
+[dependencies]
+av = "*"
+numpy = "1.26.*"
+safetensors = "*"
+einops = "*"
+psutil = "*"
+tqdm = "*"
+
+[cuda]
+packages = ["cumesh"]
+
+[pypi-dependencies]
+trimesh = { version = ">=4.0.0", extras = ["easy"] }
+comfy-aimdo = "*"
+
+[target.win-64.pypi-dependencies]
+msvc-runtime = "*"
+
+[env_vars]
+KMP_DUPLICATE_LIB_OK = "TRUE"

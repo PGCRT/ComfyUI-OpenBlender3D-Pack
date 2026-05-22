@@ -1,0 +1,102 @@
+"""
+MotionCapture Compare Skeletons Node
+Compare two skeletons side-by-side with synced rotation.
+"""
+
+import os
+import logging
+from typing import Tuple
+
+from comfy_api.latest import io
+
+try:
+    import folder_paths
+except ImportError:
+    folder_paths = None
+
+log = logging.getLogger("motioncapture")
+
+
+class CompareSkeletons(io.ComfyNode):
+    """
+    Compare two skeletons side-by-side with synced rotation.
+
+    Opens two FBX files in a split-view debug viewer where:
+    - Both skeletons are displayed side-by-side
+    - Camera rotation and zoom are synced between views
+    - Clicking a bone in one view highlights the matching bone (by name) in the other
+    """
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="CompareSkeletons",
+            display_name="Compare Skeletons",
+            category="OpenBlender/MotionCapture/Skeleton",
+            is_output_node=True,
+            inputs=[
+                io.String.Input("fbx_path_left", tooltip="Path to left skeleton FBX file"),
+                io.String.Input("fbx_path_right", tooltip="Path to right skeleton FBX file"),
+            ],
+            outputs=[],
+        )
+
+    @classmethod
+    def execute(cls, fbx_path_left: str, fbx_path_right: str):
+        """Open both FBX files in the comparison skeleton viewer."""
+        log.info("Preparing skeleton comparison view...")
+
+        if folder_paths:
+            output_dir = folder_paths.get_output_directory()
+            input_dir = folder_paths.get_input_directory()
+        else:
+            output_dir = "output"
+            input_dir = "input"
+
+        # Validate left FBX path
+        if os.path.isabs(fbx_path_left):
+            full_path_left = fbx_path_left
+        else:
+            # Check output dir first, then input dir
+            if os.path.exists(os.path.join(output_dir, fbx_path_left)):
+                full_path_left = os.path.join(output_dir, fbx_path_left)
+            elif os.path.exists(os.path.join(input_dir, fbx_path_left)):
+                full_path_left = os.path.join(input_dir, fbx_path_left)
+            else:
+                full_path_left = os.path.join(output_dir, fbx_path_left)
+
+        if not os.path.exists(full_path_left):
+            raise RuntimeError(f"Left FBX file not found: {fbx_path_left}")
+
+        # Validate right FBX path
+        if os.path.isabs(fbx_path_right):
+            full_path_right = fbx_path_right
+        else:
+            if os.path.exists(os.path.join(output_dir, fbx_path_right)):
+                full_path_right = os.path.join(output_dir, fbx_path_right)
+            elif os.path.exists(os.path.join(input_dir, fbx_path_right)):
+                full_path_right = os.path.join(input_dir, fbx_path_right)
+            else:
+                full_path_right = os.path.join(output_dir, fbx_path_right)
+
+        if not os.path.exists(full_path_right):
+            raise RuntimeError(f"Right FBX file not found: {fbx_path_right}")
+
+        log.info("Left FBX: %s", full_path_left)
+        log.info("Right FBX: %s", full_path_right)
+
+        # For the viewer, use relative path if in output, otherwise basename
+        if os.path.isabs(fbx_path_left):
+            viewer_filename_left = os.path.basename(fbx_path_left)
+        else:
+            viewer_filename_left = fbx_path_left
+
+        if os.path.isabs(fbx_path_right):
+            viewer_filename_right = os.path.basename(fbx_path_right)
+        else:
+            viewer_filename_right = fbx_path_right
+
+        return io.NodeOutput(ui={
+            "fbx_file_left": [viewer_filename_left],
+            "fbx_file_right": [viewer_filename_right],
+        })

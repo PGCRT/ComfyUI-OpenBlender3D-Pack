@@ -1,0 +1,248 @@
+{
+  "id": "99d7a206-3afe-4ab6-ad84-842258739192",
+  "revision": 0,
+  "last_node_id": 7,
+  "last_link_id": 11,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "GeomPackCreatePrimitive",
+      "pos": [
+        -385.07737412512756,
+        169.36276444668482
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "shape",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "shape"
+          }
+        },
+        {
+          "name": "size",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "size"
+          }
+        },
+        {
+          "name": "subdivisions",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "subdivisions"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "8b8322e2f784d84097cd3427f097b55dc9a29d2a",
+        "Node name for S&R": "GeomPackCreatePrimitive"
+      },
+      "widgets_values": [
+        "cube",
+        1.0,
+        2
+      ]
+    },
+    {
+      "id": 1,
+      "type": "GeomPackCreatePrimitive",
+      "pos": [
+        -406.7715890011608,
+        -54.81078927232348
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "shape",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "shape"
+          }
+        },
+        {
+          "name": "size",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "size"
+          }
+        },
+        {
+          "name": "subdivisions",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "subdivisions"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "8b8322e2f784d84097cd3427f097b55dc9a29d2a",
+        "Node name for S&R": "GeomPackCreatePrimitive"
+      },
+      "widgets_values": [
+        "cube",
+        1.0,
+        2
+      ]
+    },
+    {
+      "id": 7,
+      "type": "GeomPackPreviewMeshDual",
+      "pos": [
+        290.82090195958176,
+        -94.5593042516624
+      ],
+      "size": [
+        768,
+        834
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 10
+        },
+        {
+          "name": "mesh_2",
+          "type": "TRIMESH",
+          "link": 11
+        },
+        {
+          "name": "layout",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "layout"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "opacity_1",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "opacity_1"
+          }
+        },
+        {
+          "name": "opacity_2",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "opacity_2"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "a22feb725fe9afaf6cdcfa75002a514292fcec9a",
+        "Node name for S&R": "GeomPackPreviewMeshDual"
+      },
+      "widgets_values": [
+        "side_by_side",
+        "fields",
+        1.0,
+        1.0,
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      10,
+      1,
+      0,
+      7,
+      0,
+      "TRIMESH"
+    ],
+    [
+      11,
+      2,
+      0,
+      7,
+      1,
+      "TRIMESH"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.9680000000000015,
+      "offset": [
+        616.5832173585986,
+        348.8529509458769
+      ]
+    },
+    "frontendVersion": "1.30.6"
+  },
+  "version": 0.4
+}

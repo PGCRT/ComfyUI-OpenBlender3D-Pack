@@ -1,0 +1,1764 @@
+{
+  "id": "fc31dc6e-fd82-4f42-9d3a-57283ccfadba",
+  "revision": 0,
+  "last_node_id": 55,
+  "last_link_id": 72,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "GeomPackLoadMesh",
+      "pos": [
+        -1014.1521350641405,
+        -579.0137321727649
+      ],
+      "size": [
+        270,
+        78
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "file_path",
+          "name": "file_path",
+          "type": "COMBO",
+          "widget": {
+            "name": "file_path"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "mesh",
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            37,
+            38,
+            41,
+            42,
+            44,
+            45,
+            46,
+            47,
+            56,
+            57,
+            58,
+            59,
+            66,
+            67,
+            68
+          ]
+        },
+        {
+          "localized_name": "texture",
+          "name": "texture",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "253a956368261760da54dc96750c2ab0224e2b1f",
+        "Node name for S&R": "GeomPackLoadMesh",
+        "aux_id": "PozzettiAndrea/ComfyUI-GeometryPack"
+      },
+      "widgets_values": [
+        "cannon_generated.glb"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -252.4796326065235,
+        -967.5718475471988
+      ],
+      "size": [
+        366.22833806818176,
+        206
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 37
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            39
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 37,
+      "type": "GeomPackRemesh",
+      "pos": [
+        135.90945541795637,
+        -709.2518630000504
+      ],
+      "size": [
+        366.22833806818176,
+        182
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 42
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            43
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 29,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        -250.65357747104312,
+        -472.80821058805077
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 38
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 39
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 40
+        },
+        {
+          "localized_name": "mesh_4",
+          "name": "mesh_4",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 43
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "8f0378ab0ec8f20aad7b96ab2b1ec39ae6f82b6f",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 45,
+      "type": "GeomPackRemesh",
+      "pos": [
+        945.7681182179566,
+        -963.8635115000499
+      ],
+      "size": [
+        366.22833806818176,
+        206
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 47
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            49
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 42,
+      "type": "GeomPackRemesh",
+      "pos": [
+        549.6658062424374,
+        -696.6258269529004
+      ],
+      "size": [
+        366.22833806818176,
+        158
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 45
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            50
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 39,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -247.41854458204313,
+        -710.5828630000495
+      ],
+      "size": [
+        366.22833806818176,
+        182
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 41
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            40
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 51,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -78.43093791956267,
+        297.79791651807244
+      ],
+      "size": [
+        366.22833806818176,
+        182
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 66
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            70
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 53,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -225.54473505133143,
+        544.1198616120959
+      ],
+      "size": [
+        366.22833806818176,
+        218
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 67
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            71
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 52,
+      "type": "GeomPackRemesh",
+      "pos": [
+        158.48666338616763,
+        539.9816057527202
+      ],
+      "size": [
+        366.22833806818176,
+        158
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 68
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            72
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 50,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -1054.5376867889013,
+        -409.41668100861546
+      ],
+      "size": [
+        366.22833806818176,
+        230
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 56
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            52
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 47,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -1049.4765987644212,
+        -112.12259646146691
+      ],
+      "size": [
+        366.22833806818176,
+        182
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 58
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            54
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 48,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -666.1485987644222,
+        -126.89669646146771
+      ],
+      "size": [
+        366.22833806818176,
+        134
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 59
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            55
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 49,
+      "type": "GeomPackRemesh",
+      "pos": [
+        -661.8442867889027,
+        -405.9802810086156
+      ],
+      "size": [
+        366.22833806818176,
+        230
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 57
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            53
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 46,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        -1057.238644432902,
+        106.33224496938243
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 52
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 53
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 54
+        },
+        {
+          "localized_name": "mesh_4",
+          "name": "mesh_4",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 55
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "8f0378ab0ec8f20aad7b96ab2b1ec39ae6f82b6f",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 30,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        550.3737605739569,
+        -480.5909855220511
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 51
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 49
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 50
+        },
+        {
+          "localized_name": "mesh_4",
+          "name": "mesh_4",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 48
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "8f0378ab0ec8f20aad7b96ab2b1ec39ae6f82b6f",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 55,
+      "type": "GeomPackPreviewMeshMulti",
+      "pos": [
+        549.6668179398112,
+        323.70854948682233
+      ],
+      "size": [
+        768,
+        702
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "mesh_1",
+          "name": "mesh_1",
+          "type": "TRIMESH",
+          "link": 70
+        },
+        {
+          "localized_name": "mesh_2",
+          "name": "mesh_2",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 71
+        },
+        {
+          "localized_name": "mesh_3",
+          "name": "mesh_3",
+          "shape": 7,
+          "type": "TRIMESH",
+          "link": 72
+        },
+        {
+          "name": "mesh_4",
+          "type": "TRIMESH",
+          "link": null,
+          "localized_name": "mesh_4",
+          "widget": {
+            "name": "mesh_4"
+          }
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "link": null,
+          "localized_name": "mode",
+          "widget": {
+            "name": "mode"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "8f0378ab0ec8f20aad7b96ab2b1ec39ae6f82b6f",
+        "Node name for S&R": "GeomPackPreviewMeshMulti"
+      },
+      "widgets_values": [
+        "fields",
+        "fields",
+        null,
+        null
+      ]
+    },
+    {
+      "id": 43,
+      "type": "GeomPackRemesh",
+      "pos": [
+        932.9938062424369,
+        -711.3999269529013
+      ],
+      "size": [
+        366.22833806818176,
+        182
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 46
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            48
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": 44,
+      "type": "GeomPackRemesh",
+      "pos": [
+        544.604718217957,
+        -969.7199115000496
+      ],
+      "size": [
+        366.22833806818176,
+        206
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "trimesh",
+          "name": "trimesh",
+          "type": "TRIMESH",
+          "link": 44
+        },
+        {
+          "name": "backend",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "link": null,
+          "localized_name": "backend",
+          "widget": {
+            "name": "backend"
+          }
+        },
+        {
+          "name": "prompt",
+          "type": "PROMPT",
+          "link": null,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "extra_pnginfo",
+          "type": "EXTRA_PNGINFO",
+          "link": null,
+          "widget": {
+            "name": "extra_pnginfo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "remeshed_mesh",
+          "name": "remeshed_mesh",
+          "type": "TRIMESH",
+          "links": [
+            51
+          ]
+        },
+        {
+          "localized_name": "info",
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-geometrypack",
+        "ver": "f4d5713f5feef867c82be5a2d67e532e7a95933b",
+        "Node name for S&R": "GeomPackRemesh"
+      },
+      "widgets_values": [
+        {
+          "backend": "pymeshlab_isotropic",
+          "target_edge_length": 1.0,
+          "iterations": 3,
+          "feature_angle": 30.0,
+          "adaptive": "false"
+        },
+        null,
+        null
+      ]
+    }
+  ],
+  "links": [
+    [
+      37,
+      1,
+      0,
+      27,
+      0,
+      "TRIMESH"
+    ],
+    [
+      38,
+      1,
+      0,
+      29,
+      0,
+      "TRIMESH"
+    ],
+    [
+      39,
+      27,
+      0,
+      29,
+      1,
+      "TRIMESH"
+    ],
+    [
+      40,
+      39,
+      0,
+      29,
+      2,
+      "TRIMESH"
+    ],
+    [
+      41,
+      1,
+      0,
+      39,
+      0,
+      "TRIMESH"
+    ],
+    [
+      42,
+      1,
+      0,
+      37,
+      0,
+      "TRIMESH"
+    ],
+    [
+      43,
+      37,
+      0,
+      29,
+      3,
+      "TRIMESH"
+    ],
+    [
+      44,
+      1,
+      0,
+      44,
+      0,
+      "TRIMESH"
+    ],
+    [
+      45,
+      1,
+      0,
+      42,
+      0,
+      "TRIMESH"
+    ],
+    [
+      46,
+      1,
+      0,
+      43,
+      0,
+      "TRIMESH"
+    ],
+    [
+      47,
+      1,
+      0,
+      45,
+      0,
+      "TRIMESH"
+    ],
+    [
+      48,
+      43,
+      0,
+      30,
+      3,
+      "TRIMESH"
+    ],
+    [
+      49,
+      45,
+      0,
+      30,
+      1,
+      "TRIMESH"
+    ],
+    [
+      50,
+      42,
+      0,
+      30,
+      2,
+      "TRIMESH"
+    ],
+    [
+      51,
+      44,
+      0,
+      30,
+      0,
+      "TRIMESH"
+    ],
+    [
+      52,
+      50,
+      0,
+      46,
+      0,
+      "TRIMESH"
+    ],
+    [
+      53,
+      49,
+      0,
+      46,
+      1,
+      "TRIMESH"
+    ],
+    [
+      54,
+      47,
+      0,
+      46,
+      2,
+      "TRIMESH"
+    ],
+    [
+      55,
+      48,
+      0,
+      46,
+      3,
+      "TRIMESH"
+    ],
+    [
+      56,
+      1,
+      0,
+      50,
+      0,
+      "TRIMESH"
+    ],
+    [
+      57,
+      1,
+      0,
+      49,
+      0,
+      "TRIMESH"
+    ],
+    [
+      58,
+      1,
+      0,
+      47,
+      0,
+      "TRIMESH"
+    ],
+    [
+      59,
+      1,
+      0,
+      48,
+      0,
+      "TRIMESH"
+    ],
+    [
+      66,
+      1,
+      0,
+      51,
+      0,
+      "TRIMESH"
+    ],
+    [
+      67,
+      1,
+      0,
+      53,
+      0,
+      "TRIMESH"
+    ],
+    [
+      68,
+      1,
+      0,
+      52,
+      0,
+      "TRIMESH"
+    ],
+    [
+      70,
+      51,
+      0,
+      55,
+      0,
+      "TRIMESH"
+    ],
+    [
+      71,
+      53,
+      0,
+      55,
+      1,
+      "TRIMESH"
+    ],
+    [
+      72,
+      52,
+      0,
+      55,
+      2,
+      "TRIMESH"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.6528681764088488,
+      "offset": [
+        838.5608850192757,
+        553.1081306843021
+      ]
+    },
+    "frontendVersion": "1.30.6",
+    "workflowRendererVersion": "LG"
+  },
+  "version": 0.4
+}
