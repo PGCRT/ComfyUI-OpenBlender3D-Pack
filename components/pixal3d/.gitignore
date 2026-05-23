@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.idea/
+.vscode/
+.ipynb_checkpoints/
+
+# isolated env build markers
+_env_*
+.pixi/
+
+# autotune caches
+autotune_cache.json
+
+# (no /models/ ignore — ComfyUI stores model weights at ComfyUI/models/, not inside this pack.
+# Recursive `models/` would also hide the vendored nodes/pixal3d/models/ package!)

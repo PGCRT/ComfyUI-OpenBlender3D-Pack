@@ -1,0 +1,19 @@
+[test]
+levels = ["syntax", "install", "registration", "instantiation", "execution"]
+publish = 'true'
+
+[test.workflows]
+cpu = ["merge_splats"]
+gpu = []
+
+[test.platforms]
+# CPU platforms (GaussianPack runs on CPU — pure-Python NanoGS,
+# no CUDA wheels needed).
+linux = true
+macos = true
+windows = true
+windows_portable = true
+linux_gpu = false
+windows_gpu = false
+windows_portable_gpu = false
+windows_desktop_gpu = false

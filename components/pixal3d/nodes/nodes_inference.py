@@ -1,0 +1,253 @@
+"""Pixal3D inference nodes -- preprocess, camera, and the fused generate-to-GLB node."""
+
+import logging
+
+import torch
+from comfy_api.latest import io
+
+log = logging.getLogger("pixal3d")
+
+
+class Pixal3DPreprocessImage(io.ComfyNode):
+    """Alpha-aware crop + 1024-max resize + bg fill. No rembg (bring your own MASK)."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="Pixal3DPreprocessImage",
+            display_name="Pixal3D Preprocess Image",
+            category="OpenBlender/Pixal3D",
+            description=(
+                "Pure-PIL preprocess for Pixal3D: alpha-bbox crop (using MASK), "
+                "downscale longest side to 1024, fill background with solid black. "
+                "Background removal is NOT done here -- feed in a MASK from LoadImage "
+                "(if the source PNG has transparency) or from any rembg node "
+                "(Comfy-rembg, BRIA-RMBG, etc.). If no MASK is wired, the full image "
+                "is treated as the subject (just resized, no crop)."
+            ),
+            inputs=[
+                io.Image.Input("image"),
+                io.Mask.Input("mask", optional=True, tooltip="Subject mask (1.0=opaque). LoadImage's MASK output works directly."),
+            ],
+            outputs=[
+                io.Image.Output(display_name="image"),
+            ],
+        )
+
+    @classmethod
+    def execute(cls, image, mask=None):
+        from .stages import preprocess_image, _phase
+        with _phase("Pixal3DPreprocessImage.execute"):
+            out = preprocess_image(image, mask=mask)
+            return io.NodeOutput(out)
+
+
+class Pixal3DCameraFromFOV(io.ComfyNode):
+    """Pack an externally-measured horizontal FOV into a PIXAL3D_CAMERA dict.
+
+    Designed to consume `fov_x` (degrees) from the ComfyUI-MoGe2 pack's
+    `MoGe2Inference` node. Camera estimation is no longer in-process here -- we
+    let MoGe2 own model loading and just do the rad conversion + back-projection
+    distance math the cascade needs."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="Pixal3DCameraFromFOV",
+            display_name="Pixal3D Camera From FOV",
+            category="OpenBlender/Pixal3D",
+            description=(
+                "Converts horizontal FOV (degrees) into the PIXAL3D_CAMERA dict the "
+                "cascade expects (camera_angle_x in radians + back-projection distance "
+                "+ mesh scale). Wire the `fov_x` output of ComfyUI-MoGe2's "
+                "`MoGe2Inference` node into `fov_x_deg` here."
+            ),
+            inputs=[
+                io.Float.Input(
+                    "fov_x_deg",
+                    default=60.0, min=1.0, max=170.0, step=0.1,
+                    tooltip="Horizontal FOV in degrees. Wire from MoGe2Inference.fov_x.",
+                ),
+                io.Float.Input("mesh_scale", default=1.0, min=0.1, max=10.0, step=0.05, optional=True),
+                io.Int.Input("extend_pixel", default=0, min=0, max=128, optional=True),
+                io.Int.Input("image_resolution", default=512, min=256, max=2048, step=64, optional=True),
+            ],
+            outputs=[
+                io.Custom("PIXAL3D_CAMERA").Output(display_name="camera"),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        fov_x_deg: float,
+        mesh_scale: float = 1.0,
+        extend_pixel: int = 0,
+        image_resolution: int = 512,
+    ):
+        from .stages import pack_camera_from_fov, _phase
+        with _phase("Pixal3DCameraFromFOV.execute"):
+            cam = pack_camera_from_fov(
+                fov_x_deg=fov_x_deg,
+                mesh_scale=mesh_scale,
+                extend_pixel=extend_pixel,
+                image_resolution=image_resolution,
+            )
+            log.info(
+                f"[Pixal3DCameraFromFOV] fov_x_deg={fov_x_deg:.2f}, "
+                f"camera_angle_x={cam['camera_angle_x']:.4f}, "
+                f"distance={cam['distance']:.4f}, mesh_scale={cam['mesh_scale']:.4f}"
+            )
+            return io.NodeOutput(cam)
+
+
+class Pixal3DGenerateGLB(io.ComfyNode):
+    """Fused cascade run + GLB extraction. Returns the saved GLB filepath."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="Pixal3DGenerateGLB",
+            display_name="Pixal3D Generate GLB",
+            category="OpenBlender/Pixal3D",
+            is_output_node=True,
+            description=(
+                "Runs the four-stage cascade (sparse structure -> shape LR 512 -> "
+                "shape HR 1024 -> texture 1024) and extracts a textured GLB. "
+                "Cascade resolution can auto-shrink below the requested HR if the "
+                "token budget is exceeded; check logs."
+            ),
+            inputs=[
+                io.Custom("PIXAL3D_PIPELINE").Input("pipeline", tooltip="From Pixal3DLoadPipeline."),
+                io.Image.Input("image", tooltip="Preprocessed image."),
+                io.Custom("PIXAL3D_CAMERA").Input("camera", tooltip="From Pixal3DCameraFromFOV."),
+                io.Int.Input("seed", default=42, min=0, max=2**31 - 1),
+                io.Int.Input("max_num_tokens", default=49152, min=1024, max=131072, step=1024, optional=True),
+                # SS knobs
+                io.Int.Input("ss_steps", default=12, min=1, max=64, optional=True),
+                io.Float.Input("ss_guidance", default=7.5, min=0.0, max=15.0, step=0.1, optional=True),
+                io.Float.Input("ss_rescale", default=0.7, min=0.0, max=1.0, step=0.05, optional=True),
+                io.Float.Input("ss_rescale_t", default=5.0, min=0.0, max=10.0, step=0.1, optional=True),
+                # Shape knobs
+                io.Int.Input("shape_steps", default=12, min=1, max=64, optional=True),
+                io.Float.Input("shape_guidance", default=7.5, min=0.0, max=15.0, step=0.1, optional=True),
+                io.Float.Input("shape_rescale", default=0.5, min=0.0, max=1.0, step=0.05, optional=True),
+                io.Float.Input("shape_rescale_t", default=3.0, min=0.0, max=10.0, step=0.1, optional=True),
+                # Tex knobs
+                io.Int.Input("tex_steps", default=12, min=1, max=64, optional=True),
+                io.Float.Input("tex_guidance", default=1.0, min=0.0, max=15.0, step=0.1, optional=True),
+                io.Float.Input("tex_rescale", default=0.0, min=0.0, max=1.0, step=0.05, optional=True),
+                io.Float.Input("tex_rescale_t", default=3.0, min=0.0, max=10.0, step=0.1, optional=True),
+                # GLB knobs
+                io.Int.Input("decimation_target", default=200000, min=10000, max=1000000, step=10000, optional=True),
+                io.Int.Input("texture_size", default=2048, min=512, max=4096, step=256, optional=True),
+                io.Boolean.Input(
+                    "force_opaque",
+                    default=True,
+                    tooltip=(
+                        "Emit COLOR_0 as VEC3 (no alpha channel at all). Most viewers default "
+                        "to opaque when no alpha is present. Untoggle to emit VEC4 + a "
+                        "PBRMaterial(alphaMode=BLEND) using the model's per-vertex alpha."
+                    ),
+                    optional=True,
+                ),
+                io.Boolean.Input(
+                    "double_sided",
+                    default=False,
+                    tooltip=(
+                        "Mark the material as double-sided in the GLB (renders both front "
+                        "and back faces). Useful for thin shells (foliage, glass) or "
+                        "shapes with residual inverted faces. Default off, mirroring TRELLIS2."
+                    ),
+                    optional=True,
+                ),
+                io.Boolean.Input(
+                    "remove_inner_faces",
+                    default=False,
+                    tooltip=(
+                        "After winding cleanup, run BVH raystab on each face's outward-offset "
+                        "center and drop faces whose interior lies inside the bulk. Useful when "
+                        "the cascade emits floaters or internal cavity walls. Costs ~2-5s "
+                        "extra on a 200k-face mesh."
+                    ),
+                    optional=True,
+                ),
+                io.String.Input("filename_prefix", default="pixal3d", optional=True),
+            ],
+            outputs=[
+                io.String.Output(display_name="glb_filepath"),
+            ],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        pipeline,
+        image,
+        camera,
+        seed: int = 42,
+        max_num_tokens: int = 49152,
+        ss_steps: int = 12,
+        ss_guidance: float = 7.5,
+        ss_rescale: float = 0.7,
+        ss_rescale_t: float = 5.0,
+        shape_steps: int = 12,
+        shape_guidance: float = 7.5,
+        shape_rescale: float = 0.5,
+        shape_rescale_t: float = 3.0,
+        tex_steps: int = 12,
+        tex_guidance: float = 1.0,
+        tex_rescale: float = 0.0,
+        tex_rescale_t: float = 3.0,
+        decimation_target: int = 200000,
+        texture_size: int = 2048,
+        force_opaque: bool = True,
+        double_sided: bool = False,
+        remove_inner_faces: bool = False,
+        filename_prefix: str = "pixal3d",
+    ):
+        from .stages import generate_glb, _phase
+        with _phase("Pixal3DGenerateGLB.execute"):
+            pipeline_type = pipeline.get("pipeline_type", "1024_cascade")
+            attn_backend = pipeline.get("attn_backend", "auto")
+
+            out = generate_glb(
+                image=image,
+                camera_params=camera,
+                seed=seed,
+                pipeline_type=pipeline_type,
+                attn_backend=attn_backend,
+                max_num_tokens=max_num_tokens,
+                ss_steps=ss_steps,
+                ss_guidance=ss_guidance,
+                ss_rescale=ss_rescale,
+                ss_rescale_t=ss_rescale_t,
+                shape_steps=shape_steps,
+                shape_guidance=shape_guidance,
+                shape_rescale=shape_rescale,
+                shape_rescale_t=shape_rescale_t,
+                tex_steps=tex_steps,
+                tex_guidance=tex_guidance,
+                tex_rescale=tex_rescale,
+                force_opaque=force_opaque,
+                double_sided=double_sided,
+                remove_inner_faces=remove_inner_faces,
+                tex_rescale_t=tex_rescale_t,
+                decimation_target=decimation_target,
+                texture_size=texture_size,
+                filename_prefix=filename_prefix,
+            )
+            return io.NodeOutput(out)
+
+
+NODE_CLASS_MAPPINGS = {
+    "Pixal3DPreprocessImage": Pixal3DPreprocessImage,
+    "Pixal3DCameraFromFOV": Pixal3DCameraFromFOV,
+    "Pixal3DGenerateGLB": Pixal3DGenerateGLB,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "Pixal3DPreprocessImage": "Pixal3D Preprocess Image",
+    "Pixal3DCameraFromFOV": "Pixal3D Camera From FOV",
+    "Pixal3DGenerateGLB": "Pixal3D Generate GLB",
+}

@@ -6,10 +6,8 @@ import argparse
 import hashlib
 import json
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -283,60 +281,22 @@ def _component_missing_or_empty(spec) -> bool:
         return True
 
 
-def _bootstrap_component_source(spec, dry_run: bool) -> dict[str, Any]:
-    source = getattr(spec, "source", None)
-    if not source:
-        return {"status": "SKIPPED", "reason": "no source in manifest"}
-    if "/" not in source:
-        return {"status": "SKIPPED", "reason": f"invalid source format: {source}"}
-    if not _component_missing_or_empty(spec):
-        return {"status": "OK", "reason": "component directory already populated"}
-
-    repo_url = f"https://github.com/{source}.git"
-    target = Path(spec.path)
-    print(f"[OpenBlender3D-Pack] Bootstrapping missing component '{spec.id}' from {repo_url}")
-    if dry_run:
-        return {"status": "DRY_RUN", "reason": f"would clone {repo_url} into {target}"}
-
-    with tempfile.TemporaryDirectory(prefix=f"openblender_{spec.id}_") as td:
-        clone_dir = Path(td) / "repo"
-        clone_cmd = ["git", "clone", "--depth", "1", repo_url, str(clone_dir)]
-        clone = subprocess.run(clone_cmd, capture_output=True, text=True)
-        if clone.returncode != 0:
-            return {
-                "status": "FAILED",
-                "reason": "git clone failed",
-                "repo": repo_url,
-                "stderr": (clone.stderr or "").strip()[-600:],
-            }
-        target.mkdir(parents=True, exist_ok=True)
-        for item in clone_dir.iterdir():
-            if item.name == ".git":
-                continue
-            dst = target / item.name
-            if dst.exists():
-                if dst.is_dir():
-                    shutil.rmtree(dst, ignore_errors=True)
-                else:
-                    dst.unlink(missing_ok=True)
-            if item.is_dir():
-                shutil.copytree(item, dst)
-            else:
-                shutil.copy2(item, dst)
-
-    return {"status": "OK", "reason": f"bootstrapped from {repo_url}"}
-
-
 def ensure_component_sources(selected: set[str] | None, dry_run: bool) -> None:
-    results = {}
+    missing = []
     for spec in selected_component_specs(selected):
-        source = getattr(spec, "source", None)
-        if not source:
-            continue
         if _component_missing_or_empty(spec):
-            results[spec.id] = _bootstrap_component_source(spec, dry_run=dry_run)
-    if results:
-        print(f"[OpenBlender3D-Pack] component source bootstrap: {json.dumps(results, ensure_ascii=False)}")
+            missing.append(spec.id)
+
+    if not missing:
+        return
+    if dry_run:
+        print(f"[OpenBlender3D-Pack] DRY_RUN: missing bundled components: {', '.join(sorted(missing))}")
+        return
+    raise RuntimeError(
+        "Missing bundled OpenBlender components: "
+        + ", ".join(sorted(missing))
+        + ". Reinstall ComfyUI-OpenBlender3D-Pack from a complete release bundle."
+    )
 
 
 def repair(selected: set[str] | None, dry_run: bool) -> None:
