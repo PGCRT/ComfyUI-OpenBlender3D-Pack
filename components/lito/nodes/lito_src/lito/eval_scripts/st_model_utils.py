@@ -47,7 +47,13 @@ def download_checkpoint(url: str, download_dir_root: str, overwrite: bool) -> st
     cannot leave a partially-written file in the cache.
     """
     import requests
-    from tqdm import tqdm
+    try:
+        from download_progress import _comfy_tqdm_class
+        tqdm = _comfy_tqdm_class()
+    except Exception:
+        tqdm = None
+    if tqdm is None:
+        from tqdm import tqdm
 
     os.makedirs(download_dir_root, exist_ok=True)
     filename = os.path.basename(urlparse(url).path) or "checkpoint.ckpt"

@@ -25,6 +25,7 @@ import torch
 from PIL import Image
 
 import folder_paths
+from download_progress import download_url_with_progress
 
 log = logging.getLogger("pixal3d")
 
@@ -261,9 +262,8 @@ def _download_naf() -> Tuple[Path, Path]:
     ckpt = naf_dir / "naf_release.pth"
 
     if not ckpt.exists():
-        import urllib.request
         log.info(f"  downloading NAF checkpoint to {ckpt}")
-        urllib.request.urlretrieve(NAF_CHECKPOINT_URL, str(ckpt))
+        download_url_with_progress(NAF_CHECKPOINT_URL, ckpt, desc="NAF checkpoint")
     return NAF_VENDOR_DIR, ckpt
 
 

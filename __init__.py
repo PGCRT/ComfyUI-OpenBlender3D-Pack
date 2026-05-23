@@ -17,6 +17,13 @@ if str(PACK_DIR) not in sys.path:
 log = logging.getLogger("openblender3d")
 
 try:
+    from .download_progress import install_hf_progress_patch
+except Exception:
+    from download_progress import install_hf_progress_patch
+
+install_hf_progress_patch()
+
+try:
     from .openblender_lazy import register_manifest_components
 except Exception:
     from openblender_lazy import register_manifest_components
