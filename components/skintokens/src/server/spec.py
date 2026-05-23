@@ -77,7 +77,7 @@ def get_model(
             hf_path,
             local_files_only=True,
             _attn_implementation="flash_attention_2",
-            torch_dtype=torch.bfloat16,
+            dtype=torch.bfloat16,
         )
         model.transformer.model.load_state_dict(a.state_dict())
 
