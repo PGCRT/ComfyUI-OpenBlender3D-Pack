@@ -240,7 +240,10 @@ def _ensure_bpy_server(timeout: int = 30) -> None:
             "stderr": _BPY_LOG,
         }
         if os.name == "nt":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+            if hasattr(subprocess, "CREATE_NO_WINDOW"):
+                creationflags |= subprocess.CREATE_NO_WINDOW
+            kwargs["creationflags"] = creationflags
         else:
             kwargs["preexec_fn"] = os.setsid
         _BPY_PROC = subprocess.Popen(**kwargs)
@@ -280,6 +283,21 @@ def _stop_bpy_server() -> None:
             _BPY_LOG.close()
         except Exception:
             pass
+
+
+def _restart_bpy_server(timeout: int = 30) -> None:
+    global _BPY_PROC
+    _stop_bpy_server()
+    _BPY_PROC = None
+    _ensure_bpy_server(timeout=timeout)
+
+
+def _post_bpy_payload_with_retry(endpoint: str, payload):
+    try:
+        return _post_bpy_payload(endpoint, payload)
+    except Exception:
+        _restart_bpy_server()
+        return _post_bpy_payload(endpoint, payload)
 
 
 def _output_path(input_path: Path) -> Path:
@@ -353,12 +371,11 @@ class SkinTokensRigMesh:
         use_postprocess: bool,
     ):
         _ensure_repo_on_path()
-        _ensure_bpy_dll_path()
         tokenrig, tokenizer, transform = _load_model(model["model_ckpt"], model.get("hf_path"))
+        _ensure_bpy_server()
 
         from torch import Tensor
         from src.data.dataset import DatasetConfig, RigDatasetModule
-        from src.rig_package.parser.bpy import BpyParser, transfer_rigging
         from src.data.vertex_group import voxel_skin
 
         input_path = _resolve_path(mesh_path)
@@ -368,9 +385,7 @@ class SkinTokensRigMesh:
 
         datapath = {
             "data_name": None,
-            # num_workers=0 here, so direct bpy loading is safe and avoids
-            # flaky subprocess RPC crashes on Windows.
-            "loader": "bpy",
+            "loader": "bpy_server",
             "filepaths": {"articulation": [str(input_path)]},
         }
         dataset_config = DatasetConfig.parse(
@@ -381,14 +396,22 @@ class SkinTokensRigMesh:
             persistent_workers=False,
             datapath=datapath,
         ).split_by_cls()
-        module = RigDatasetModule(
-            predict_dataset_config=dataset_config,
-            predict_transform=transform,
-            tokenizer=tokenizer,
-            process_fn=tokenrig._process_fn,
-        )
-        dataloader = module.predict_dataloader()["articulation"]
-        batch = next(iter(dataloader))
+        def _make_dataloader():
+            module = RigDatasetModule(
+                predict_dataset_config=dataset_config,
+                predict_transform=transform,
+                tokenizer=tokenizer,
+                process_fn=tokenrig._process_fn,
+            )
+            return module.predict_dataloader()["articulation"]
+
+        try:
+            dataloader = _make_dataloader()
+            batch = next(iter(dataloader))
+        except Exception:
+            _restart_bpy_server()
+            dataloader = _make_dataloader()
+            batch = next(iter(dataloader))
         batch = {k: v.to("cuda") if isinstance(v, Tensor) else v for k, v in batch.items()}
 
         if not use_skeleton:
@@ -435,17 +458,21 @@ class SkinTokensRigMesh:
             asset.normalize_skin()
 
         if use_transfer:
-            transfer_rigging(
-                source_asset=asset,
-                target_path=asset.path,
-                export_path=str(out_path),
-                group_per_vertex=4,
+            result = _post_bpy_payload_with_retry(
+                "transfer",
+                {
+                    "source_asset": asset,
+                    "target_path": asset.path,
+                    "export_path": str(out_path),
+                    "group_per_vertex": 4,
+                },
             )
         else:
-            BpyParser.export(
-                asset=asset,
-                filepath=str(out_path),
-                group_per_vertex=4,
+            result = _post_bpy_payload_with_retry(
+                "export",
+                {"asset": asset, "filepath": str(out_path), "group_per_vertex": 4},
             )
 
+        if result != "ok":
+            raise RuntimeError(f"SkinTokens export failed: {result}")
         return (str(out_path),)
