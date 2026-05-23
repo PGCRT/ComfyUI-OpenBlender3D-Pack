@@ -12,6 +12,13 @@ from typing import Optional, List, Dict, Any
 
 import comfy.model_management as model_management
 
+warnings.filterwarnings(
+    "ignore", message=r".*unauthenticated requests to the HF Hub.*"
+)
+warnings.filterwarnings(
+    "ignore", message=r".*quantization_config.*from_pretrained.*"
+)
+
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
@@ -132,6 +139,26 @@ def _download_hymotion_snapshot(model_name: str) -> str:
         )
     print(f"[HY-Motion] Downloaded {repo_id}")
     return _hymotion_model_dir(model_name)
+
+
+def _download_clip_model(local_path: str) -> None:
+    repo_id = "openai/clip-vit-large-patch14"
+    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+    os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+    try:
+        from huggingface_hub import snapshot_download
+    except Exception as exc:
+        raise RuntimeError(
+            "HY-Motion CLIP files are missing and huggingface_hub is not available "
+            f"to auto-download {repo_id}. Install huggingface_hub or place the model "
+            f"files in: {local_path}"
+        ) from exc
+
+    os.makedirs(local_path, exist_ok=True)
+    print(f"[HY-Motion] Missing CLIP model, downloading {repo_id} -> {local_path}")
+    with _quiet_hf_download_logging():
+        snapshot_download(repo_id=repo_id, local_dir=local_path)
+    print(f"[HY-Motion] Downloaded CLIP model to: {local_path}")
 
 
 def get_timestamp():
@@ -1494,14 +1521,8 @@ class HYMotionEncodeText:
                     break
 
             if not local_path:
-                # 如果所有变体都不存在，显示更详细的错误信息
-                expected_paths = [
-                    os.path.join(_hy_ckpts_dir(), variant) for variant in clip_variants
-                ]
-                paths_str = "\n- ".join([""] + expected_paths)
-                raise FileNotFoundError(
-                    f"CLIP directory not found. Please download the clip-vit-large-patch14 model first and place it in one of these locations:{paths_str}"
-                )
+                local_path = os.path.join(_hy_ckpts_dir(), "clip-vit-large-patch14")
+                _download_clip_model(local_path)
 
             HYMotionEncodeText._clip_tokenizer = CLIPTokenizer.from_pretrained(
                 local_path, max_length=77, local_files_only=True
