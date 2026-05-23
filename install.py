@@ -29,13 +29,13 @@ PIXAL3D_IMPORT_GROUPS = {
         "flex_gemm": ["flex_gemm_ap", "flex_gemm"],
         "cumesh": ["cumesh_vb", "cumesh"],
         "o_voxel": ["o_voxel_vb_ap", "o_voxel"],
-        "drtk": ["drtk"],
     },
     "attention": {
         "flash_attn": ["flash_attn"],
         "flash_attn_interface": ["flash_attn_interface"],
     },
     "optional": {
+        "drtk": ["drtk"],
         "natten": ["natten"],
         "nvdiffrast.torch": ["nvdiffrast.torch"],
         "nvdiffrec_render": ["nvdiffrec_render"],
@@ -179,6 +179,43 @@ def _pip_install(env_python: Path, target: str, timeout: int = 120) -> dict[str,
     }
 
 
+def ensure_pixal3d_required_modules(env_python: Path, dry_run: bool) -> dict[str, Any]:
+    required_groups = PIXAL3D_IMPORT_GROUPS["required"]
+    status = _import_group_status(env_python, required_groups)
+    if status and not status.get("_error") and all(v.get("ok") for v in status.values()):
+        return {"status": "OK", "reason": "all required imports available"}
+
+    attempts: list[dict[str, Any]] = []
+    for label, names in required_groups.items():
+        grp = status.get(label, {}) if isinstance(status, dict) else {}
+        if grp.get("ok"):
+            continue
+        installed = False
+        for pkg in names:
+            if dry_run:
+                attempts.append({"group": label, "package": pkg, "status": "DRY_RUN"})
+                installed = True
+                break
+            res = _pip_install(env_python, pkg)
+            attempts.append({
+                "group": label,
+                "package": pkg,
+                "ok": res.get("ok"),
+                "returncode": res.get("returncode"),
+                "stderr_tail": (res.get("stderr") or "")[-300:],
+            })
+            if res.get("ok"):
+                installed = True
+                break
+        if not installed and not dry_run:
+            continue
+
+    post = _import_group_status(env_python, required_groups)
+    if post and not post.get("_error") and all(v.get("ok") for v in post.values()):
+        return {"status": "OK", "reason": "required imports resolved", "attempts": attempts}
+    return {"status": "BROKEN", "reason": "missing required pixal3d modules", "attempts": attempts, "post": post}
+
+
 def ensure_natten_for_pixal3d(env_python: Path, dry_run: bool) -> dict[str, Any]:
     if sys.platform != "win32":
         return {"status": "SKIPPED", "reason": "natten auto-wheel resolver currently enabled for Windows only"}
@@ -310,6 +347,8 @@ def repair(selected: set[str] | None, dry_run: bool) -> None:
     manifest = load_manifest()
     shared_name = str(manifest.get("shared_env_name") or "openblender")
     env_python = _env_python(shared_name)
+    pixal3d_modules = ensure_pixal3d_required_modules(env_python, dry_run=dry_run)
+    print(f"[OpenBlender3D-Pack] Pixal3D required modules: {json.dumps(pixal3d_modules, ensure_ascii=False)}")
     natten_result = ensure_natten_for_pixal3d(env_python, dry_run=dry_run)
     print(f"[OpenBlender3D-Pack] Pixal3D natten resolver: {json.dumps(natten_result, ensure_ascii=False)}")
 

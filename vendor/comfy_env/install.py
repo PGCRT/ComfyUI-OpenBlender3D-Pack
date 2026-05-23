@@ -562,12 +562,102 @@ def _install_via_pixi(cfg: ComfyEnvConfig, node_dir: Path, log: Callable[[str], 
     lock_dir = build_dir / ".building"
 
 
+    def _ensure_existing_cuda_wheels() -> None:
+        """Patch an already-built shared env when component CUDA deps changed."""
+        pytorch_packages = {"torch", "torchvision", "torchaudio"}
+        cuda_wheels_packages = [p for p in cfg.cuda_packages if p not in pytorch_packages]
+        if not cuda_wheels_packages or sys.platform == "darwin":
+            return
+
+        pixi_default = build_dir / ".pixi" / "envs" / "default"
+        python_path = pixi_default / ("python.exe" if sys.platform == "win32" else "bin/python")
+        if not python_path.exists():
+            log(f"[comfy-env] existing env has no python, cannot validate cuda wheels: {python_path}")
+            return
+
+        probe_code = r"""
+import importlib.util, json, sys
+mods = json.loads(sys.argv[1])
+out = {"missing": []}
+for package, module in mods.items():
+    try:
+        if importlib.util.find_spec(module) is None:
+            out["missing"].append(package)
+    except Exception:
+        out["missing"].append(package)
+try:
+    import torch
+    out["torch"] = getattr(torch, "__version__", "")
+    out["cuda"] = getattr(torch.version, "cuda", "")
+except Exception as exc:
+    out["torch_error"] = f"{type(exc).__name__}: {exc}"
+print(json.dumps(out))
+"""
+        module_map = {
+            package: package.replace("-", "_")
+            for package in cuda_wheels_packages
+        }
+        result = subprocess.run(
+            [str(python_path), "-c", probe_code, json.dumps(module_map)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            log(f"[comfy-env] WARNING: cuda wheel validation failed: {result.stderr.strip()}")
+            return
+        try:
+            probe = json.loads(result.stdout or "{}")
+        except Exception:
+            log(f"[comfy-env] WARNING: cuda wheel validation returned invalid JSON: {result.stdout!r}")
+            return
+
+        missing = list(probe.get("missing") or [])
+        if not missing:
+            log("[comfy-env] existing env cuda-wheels validation passed")
+            return
+
+        torch_version_raw = str(probe.get("torch") or "")
+        cuda_version_raw = str(probe.get("cuda") or "")
+        torch_match = re.match(r"^(\d+\.\d+)", torch_version_raw)
+        cuda_match = re.match(r"^(\d+\.\d+)", cuda_version_raw)
+        torch_version_existing = torch_match.group(1) if torch_match else None
+        cuda_version_existing = cuda_match.group(1) if cuda_match else None
+        if not torch_version_existing or not cuda_version_existing:
+            log(f"[comfy-env] WARNING: cannot resolve existing env torch/cuda tags: {probe}")
+            return
+
+        result = subprocess.run(
+            [str(python_path), "-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"],
+            capture_output=True,
+            text=True,
+        )
+        py_version = result.stdout.strip() if result.returncode == 0 else f"{sys.version_info.major}.{sys.version_info.minor}"
+        uv_path = _find_uv()
+        log(f"[comfy-env] existing env missing cuda-wheels: {', '.join(missing)}")
+        for package in missing:
+            wheel_url = get_wheel_url(package, torch_version_existing, cuda_version_existing, py_version)
+            if not wheel_url:
+                log(f"  [WARN] No wheel found for {package} (cu{cuda_version_existing} torch{torch_version_existing} py{py_version}) - skipping")
+                continue
+            log(f"  {package} from {wheel_url}")
+            result = subprocess.run(
+                [uv_path, "pip", "install", "--python", str(python_path), "--no-deps", "--no-cache", wheel_url],
+                capture_output=True,
+                text=True,
+            )
+            _log_subprocess(log, result, f"pip install {package}")
+            if result.returncode == 0:
+                _sanitize_cuda_wheel_metadata(pixi_default, log=log)
+            else:
+                log(f"  [WARN] Failed to install {package}: {result.stderr.strip()}")
+
 
     # Fast path: env already built. The shared OpenBlender env can be referenced
     # by several component configs; metadata may reflect the last component that
     # touched it, so do not use metadata content to force rebuilds at startup.
     if done_marker.exists():
         log(f"[comfy-env] Found existing env for {env_path.name}, skipping install")
+        _ensure_existing_cuda_wheels()
         _create_env_junction(env_path, build_dir, log)
         try: _rmtree(node_dir / ".pixi")
         except OSError: pass

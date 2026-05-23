@@ -1,3 +1,6 @@
+[options]
+shared_env_name = "openblender"
+
 [dependencies]
 av = "*"
 

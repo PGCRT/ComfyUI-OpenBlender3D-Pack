@@ -19,15 +19,73 @@ from typing import Optional, Tuple
 # refuses to download. Strip the token here — public repo validation does not
 # require auth.
 os.environ.pop("GITHUB_TOKEN", None)
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+
+
+class _FilteredStderr:
+    """Drop known noisy non-actionable warnings from worker stderr."""
+
+    def __init__(self, stream):
+        self._stream = stream
+
+    def write(self, data):
+        if not data:
+            return 0
+        if "You are sending unauthenticated requests to the HF Hub" in data:
+            return len(data)
+        if "cache-system uses symlinks by default" in data:
+            return len(data)
+        return self._stream.write(data)
+
+    def flush(self):
+        return self._stream.flush()
+
+    def isatty(self):
+        return self._stream.isatty()
+
+
+if not isinstance(sys.stderr, _FilteredStderr):
+    sys.stderr = _FilteredStderr(sys.stderr)
 
 import numpy as np
 import torch
 from PIL import Image
 
 import folder_paths
-from download_progress import download_url_with_progress
+from .download_progress_local import download_url_with_progress
 
 log = logging.getLogger("pixal3d")
+
+
+class _NoisyWarningFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        if "unauthenticated requests to the HF Hub" in msg:
+            return False
+        if "cache-system uses symlinks by default" in msg:
+            return False
+        return True
+
+
+_noisy_warning_filter = _NoisyWarningFilter()
+logging.getLogger().addFilter(_noisy_warning_filter)
+for _handler in logging.getLogger().handlers:
+    _handler.addFilter(_noisy_warning_filter)
+
+_orig_logging_warning = logging.warning
+
+
+def _filtered_logging_warning(msg, *args, **kwargs):
+    text = str(msg)
+    if "unauthenticated requests to the HF Hub" in text:
+        return
+    if "cache-system uses symlinks by default" in text:
+        return
+    return _orig_logging_warning(msg, *args, **kwargs)
+
+
+logging.warning = _filtered_logging_warning
 
 
 def _mm():
@@ -868,7 +926,10 @@ def _light_clean(tri, remove_inner_faces: bool = False):
     """In-place cumesh cleanup: dedup + repair_non_manifold + unify_face_orientations,
     plus optional BVH-raystab inner-face removal. Updates tri.vertices / tri.faces
     and returns the same trimesh."""
-    import cumesh_vb
+    try:
+        import cumesh_vb  # type: ignore
+    except Exception:
+        import cumesh as cumesh_vb  # type: ignore
     import trimesh as Trimesh
     device = _mm().get_torch_device()
     verts = torch.tensor(tri.vertices, dtype=torch.float32, device=device).contiguous()
@@ -1239,8 +1300,14 @@ def rasterize_pbr(
                 files to ComfyUI/output/ (prefixed pixal3d_debug_<ts>_). Use to
                 inspect chart layout / mesh state when textures look wrong."""
     import cv2
-    import cumesh_vb
-    from flex_gemm_ap.ops.grid_sample import grid_sample_3d
+    try:
+        import cumesh_vb  # type: ignore
+    except Exception:
+        import cumesh as cumesh_vb  # type: ignore
+    try:
+        from flex_gemm_ap.ops.grid_sample import grid_sample_3d
+    except Exception:
+        from flex_gemm.ops.grid_sample import grid_sample_3d
     import trimesh as Trimesh
 
     if not hasattr(tri.visual, "uv") or tri.visual.uv is None:

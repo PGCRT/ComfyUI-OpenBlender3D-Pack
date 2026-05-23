@@ -12,10 +12,46 @@ of numpy arrays. Both cross IPC by pickling.
 """
 
 import logging
+import time
+import uuid
+import builtins
 
 from comfy_api.latest import io
 
 log = logging.getLogger("pixal3d")
+
+
+def _cache() -> dict[str, object]:
+    cache = getattr(builtins, "_OPENBLENDER_PIXAL3D_CACHE", None)
+    if cache is None:
+        cache = {}
+        setattr(builtins, "_OPENBLENDER_PIXAL3D_CACHE", cache)
+    return cache
+
+
+def _cache_put(value: object, prefix: str) -> dict:
+    key = f"{prefix}:{int(time.time())}:{uuid.uuid4().hex}"
+    _cache()[key] = value
+    return {"__pixal3d_cache_key__": key}
+
+
+def _cache_get(value):
+    if isinstance(value, dict):
+        k = value.get("__pixal3d_cache_key__")
+        if k and k in _cache():
+            return _cache()[k]
+    return value
+
+
+def _cache_drop(value) -> None:
+    if isinstance(value, dict):
+        k = value.get("__pixal3d_cache_key__")
+        if k:
+            _cache().pop(k, None)
+
+
+def _cache_clear() -> None:
+    _cache().clear()
 
 
 class Pixal3DGenerateMesh(io.ComfyNode):
@@ -96,7 +132,7 @@ class Pixal3DGenerateMesh(io.ComfyNode):
                 f"voxelgrid={voxelgrid['attrs'].shape[0]} voxels x{voxelgrid['attrs'].shape[1]} attrs "
                 f"(mesh rotated Y-up -> Z-up for downstream bake)"
             )
-            return io.NodeOutput(tri, voxelgrid)
+            return io.NodeOutput(_cache_put(tri, "tri"), _cache_put(voxelgrid, "vox"))
 
 
 class Pixal3DProcessMesh(io.ComfyNode):
@@ -159,8 +195,9 @@ class Pixal3DProcessMesh(io.ComfyNode):
     ):
         from .stages import process_mesh, _phase
         with _phase("Pixal3DProcessMesh.execute"):
+            tri_obj = _cache_get(trimesh)
             out = process_mesh(
-                trimesh,
+                tri_obj,
                 remesh=remesh,
                 remesh_resolution=remesh_resolution,
                 remesh_band=remesh_band,
@@ -176,7 +213,7 @@ class Pixal3DProcessMesh(io.ComfyNode):
                 chart_global_iterations=chart_global_iterations,
                 chart_smooth_strength=chart_smooth_strength,
             )
-            return io.NodeOutput(out)
+            return io.NodeOutput(_cache_put(out, "tri_proc"))
 
 
 class Pixal3DRasterizePBR(io.ComfyNode):
@@ -254,16 +291,19 @@ class Pixal3DRasterizePBR(io.ComfyNode):
     ):
         from .stages import rasterize_pbr, _phase
         with _phase(f"Pixal3DRasterizePBR.execute ({bake_mode}{' +debug' if debug_dump else ''})"):
+            tri_obj = _cache_get(trimesh)
+            vox_obj = _cache_get(voxelgrid)
+            orig_obj = _cache_get(original_mesh) if original_mesh is not None else None
             out = rasterize_pbr(
-                trimesh,
-                voxelgrid,
+                tri_obj,
+                vox_obj,
                 texture_size=texture_size,
-                original_mesh=original_mesh,
+                original_mesh=orig_obj,
                 double_sided=double_sided,
                 bake_mode=bake_mode,
                 debug_dump=debug_dump,
             )
-            return io.NodeOutput(out)
+            return io.NodeOutput(_cache_put(out, "tri_pbr"))
 
 
 class Pixal3DExportGLB(io.ComfyNode):
@@ -294,9 +334,11 @@ class Pixal3DExportGLB(io.ComfyNode):
     def execute(cls, trimesh, filename_prefix: str = "pixal3d"):
         from .stages import export_glb_yup, _phase
         with _phase("Pixal3DExportGLB.execute"):
+            tri_obj = _cache_get(trimesh)
             # ProcessMesh + RasterizePBR run in a Z-up working frame; rotate
             # back to glTF Y-up here for the final file.
-            path = export_glb_yup(trimesh, filename_prefix=filename_prefix)
+            path = export_glb_yup(tri_obj, filename_prefix=filename_prefix)
+            _cache_clear()
             return io.NodeOutput(path)
 
 

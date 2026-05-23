@@ -1,3 +1,6 @@
+[options]
+shared_env_name = "openblender"
+
 [cuda]
 packages = ["pytorch3d", "gsplat", "nvdiffrast", "flash-attn", "spconv", "cumm"]
 

@@ -1,7 +1,10 @@
 from typing import *
 import torch
 from ..voxel import Voxel
-import cumesh_vb
+try:
+    import cumesh_vb as _cumesh
+except Exception:
+    import cumesh as _cumesh
 from flex_gemm_ap.ops.grid_sample import grid_sample_3d
 def _mm():
     """Lazy accessor for comfy.model_management (deferred to avoid eager CUDA init at import)."""
@@ -40,7 +43,7 @@ class Mesh:
         vertices = self.vertices.to(_mm().get_torch_device(), non_blocking=True).contiguous()
         faces = self.faces.to(_mm().get_torch_device(), non_blocking=True).contiguous()
         
-        mesh = cumesh_vb.CuMesh()
+        mesh = _cumesh.CuMesh()
         mesh.init(vertices, faces)
         mesh.get_edges()
         mesh.get_boundary_info()
@@ -64,7 +67,7 @@ class Mesh:
         vertices = self.vertices.to(_mm().get_torch_device(), non_blocking=True).contiguous()
         faces = self.faces.to(_mm().get_torch_device(), non_blocking=True).contiguous()
         
-        mesh = cumesh_vb.CuMesh()
+        mesh = _cumesh.CuMesh()
         mesh.init(vertices, faces)
         mesh.remove_faces(face_mask)
         new_vertices, new_faces = mesh.read()
@@ -76,7 +79,7 @@ class Mesh:
         vertices = self.vertices.to(_mm().get_torch_device(), non_blocking=True).contiguous()
         faces = self.faces.to(_mm().get_torch_device(), non_blocking=True).contiguous()
         
-        mesh = cumesh_vb.CuMesh()
+        mesh = _cumesh.CuMesh()
         mesh.init(vertices, faces)
         mesh.simplify(target, verbose=verbose, options=options)
         new_vertices, new_faces = mesh.read()

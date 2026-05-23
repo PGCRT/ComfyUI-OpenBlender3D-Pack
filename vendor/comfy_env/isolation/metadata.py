@@ -484,7 +484,11 @@ def build_proxy_class(
                 # requested offload. Pixal3D Image To 3D uses force_offload=True to
                 # drop VRAM after generation; registering patchers here would load
                 # those worker models straight back into ComfyUI's VRAM tracker.
-                if kwargs.get("force_offload"):
+                skip_model_patchers = (
+                    kwargs.get("force_offload")
+                    or str(cn) in {"Pixal3DGenerateMesh", "Pixal3DGenerateGLB"}
+                )
+                if skip_model_patchers:
                     try:
                         worker._last_new_models = []
                     except Exception:
