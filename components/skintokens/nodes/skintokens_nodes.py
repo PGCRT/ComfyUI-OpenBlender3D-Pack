@@ -314,10 +314,10 @@ class SkinTokensRigMesh:
     ):
         _ensure_repo_on_path()
         tokenrig, tokenizer, transform = _load_model(model["model_ckpt"], model.get("hf_path"))
-        _ensure_bpy_server()
 
         from torch import Tensor
         from src.data.dataset import DatasetConfig, RigDatasetModule
+        from src.rig_package.parser.bpy import BpyParser, transfer_rigging
         from src.data.vertex_group import voxel_skin
 
         input_path = _resolve_path(mesh_path)
@@ -327,7 +327,9 @@ class SkinTokensRigMesh:
 
         datapath = {
             "data_name": None,
-            "loader": "bpy_server",
+            # num_workers=0 here, so direct bpy loading is safe and avoids
+            # flaky subprocess RPC crashes on Windows.
+            "loader": "bpy",
             "filepaths": {"articulation": [str(input_path)]},
         }
         dataset_config = DatasetConfig.parse(
@@ -392,21 +394,17 @@ class SkinTokensRigMesh:
             asset.normalize_skin()
 
         if use_transfer:
-            result = _post_bpy_payload(
-                "transfer",
-                {
-                    "source_asset": asset,
-                    "target_path": asset.path,
-                    "export_path": str(out_path),
-                    "group_per_vertex": 4,
-                },
+            transfer_rigging(
+                source_asset=asset,
+                target_path=asset.path,
+                export_path=str(out_path),
+                group_per_vertex=4,
             )
         else:
-            result = _post_bpy_payload(
-                "export",
-                {"asset": asset, "filepath": str(out_path), "group_per_vertex": 4},
+            BpyParser.export(
+                asset=asset,
+                filepath=str(out_path),
+                group_per_vertex=4,
             )
 
-        if result != "ok":
-            raise RuntimeError(f"SkinTokens export failed: {result}")
         return (str(out_path),)

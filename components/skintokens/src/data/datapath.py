@@ -39,15 +39,30 @@ class BpyServerLazyAsset(LazyAsset):
     """workaround while bpy is working in multiple threads"""
     def load(self) -> 'Asset':
         try:
-            asset = bytes_to_object(requests.get(f"{BPY_SERVER}/load", data=object_to_bytes(self.path)).content)
+            resp = requests.get(
+                f"{BPY_SERVER}/load",
+                data=object_to_bytes(self.path),
+                timeout=120,
+            )
+            resp.raise_for_status()
+            asset = bytes_to_object(resp.content)
             if isinstance(asset, str):
                 raise RuntimeError(f"bpy server failed: {asset}")
-            assert isinstance(asset, Asset)
+            if isinstance(asset, dict):
+                err = asset.get("error", "unknown bpy server error")
+                tb = asset.get("traceback", "")
+                raise RuntimeError(
+                    f"bpy server failed: {err}\n{tb}".strip()
+                )
+            if not isinstance(asset, Asset):
+                raise RuntimeError(
+                    f"bpy server returned unexpected payload type: {type(asset).__name__}"
+                )
             asset.cls = self.cls
             asset.path = self.path
             return asset
         except Exception as e:
-            raise RuntimeError(f"bpy server failed: {str(e)}")
+            raise RuntimeError(f"bpy server failed: {repr(e)}")
 
 @dataclass
 class NpzLazyAsset(LazyAsset):
