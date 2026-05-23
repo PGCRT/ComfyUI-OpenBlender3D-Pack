@@ -2,6 +2,9 @@ import os
 import sys
 import uuid
 import time
+import contextlib
+import logging
+import warnings
 import numpy as np
 import model_management
 import torch
@@ -59,9 +62,53 @@ def _hy_ckpts_dir():
     return os.path.join(base, "ckpts")
 
 
-def _download_hymotion_snapshot(model_name: str, model_dir: str) -> None:
-    """Download HY-Motion checkpoints into the exact folder the nodes load from."""
+def _hymotion_tencent_dir() -> str:
+    return os.path.join(_hy_ckpts_dir(), "tencent")
+
+
+def _hymotion_complete(model_dir: str) -> bool:
+    return os.path.exists(os.path.join(model_dir, "config.yml")) and os.path.exists(
+        os.path.join(model_dir, "latest.ckpt")
+    )
+
+
+def _hymotion_model_dir(model_name: str) -> str:
+    tencent_dir = _hymotion_tencent_dir()
+    return os.path.join(tencent_dir, model_name)
+
+
+def _hymotion_paths(model_name: str):
+    model_dir = _hymotion_model_dir(model_name)
+    return (
+        model_dir,
+        os.path.join(model_dir, "config.yml"),
+        os.path.join(model_dir, "latest.ckpt"),
+    )
+
+
+@contextlib.contextmanager
+def _quiet_hf_download_logging():
+    noisy_loggers = ("httpx", "httpcore", "huggingface_hub")
+    old_levels = {name: logging.getLogger(name).level for name in noisy_loggers}
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", message=r".*unauthenticated requests to the HF Hub.*"
+        )
+        warnings.filterwarnings("ignore", message=r".*resume_download.*")
+        warnings.filterwarnings("ignore", message=r".*local_dir_use_symlinks.*")
+        try:
+            for name in noisy_loggers:
+                logging.getLogger(name).setLevel(logging.ERROR)
+            yield
+        finally:
+            for name, level in old_levels.items():
+                logging.getLogger(name).setLevel(level)
+
+
+def _download_hymotion_snapshot(model_name: str) -> str:
+    """Download only the requested HY-Motion checkpoint folder."""
     repo_id = f"tencent/{model_name}"
+    tencent_dir = _hymotion_tencent_dir()
     os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
     try:
@@ -70,18 +117,21 @@ def _download_hymotion_snapshot(model_name: str, model_dir: str) -> None:
         raise RuntimeError(
             "HY-Motion model files are missing and huggingface_hub is not available "
             f"to auto-download {repo_id}. Install huggingface_hub or place the model "
-            f"files in: {model_dir}"
+            f"files in: {os.path.join(tencent_dir, model_name)}"
         ) from exc
 
-    os.makedirs(model_dir, exist_ok=True)
-    print(f"[HY-Motion] Missing checkpoint files, downloading {repo_id} -> {model_dir}")
-    snapshot_download(
-        repo_id=repo_id,
-        local_dir=model_dir,
-        local_dir_use_symlinks=False,
-        resume_download=True,
+    os.makedirs(tencent_dir, exist_ok=True)
+    print(
+        f"[HY-Motion] Missing checkpoint files, downloading {repo_id} -> {tencent_dir}"
     )
+    with _quiet_hf_download_logging():
+        snapshot_download(
+            repo_id=repo_id,
+            local_dir=tencent_dir,
+            allow_patterns=[f"{model_name}/*"],
+        )
     print(f"[HY-Motion] Downloaded {repo_id}")
+    return _hymotion_model_dir(model_name)
 
 
 def get_timestamp():
@@ -267,7 +317,8 @@ class HYMotionLoadLLM:
         for repo_id in cls._candidate_repos_for_model(model_name):
             try:
                 print(f"[HY-Motion] Missing local LLM '{model_name}', downloading from {repo_id}...")
-                snapshot_download(repo_id=repo_id, local_dir=local_path, local_dir_use_symlinks=False)
+                with _quiet_hf_download_logging():
+                    snapshot_download(repo_id=repo_id, local_dir=local_path)
                 if os.path.exists(local_path):
                     print(f"[HY-Motion] Downloaded model to: {local_path}")
                     return
@@ -1229,12 +1280,12 @@ class HYMotionLoadNetwork:
         from .hymotion.utils.loaders import load_object
         from .hymotion.pipeline.body_model import WoodenMesh
 
-        model_dir = os.path.join(_hy_ckpts_dir(), "tencent", model_name)
-        config_path = os.path.join(model_dir, "config.yml")
-        ckpt_path = os.path.join(model_dir, "latest.ckpt")
+        model_dir, config_path, ckpt_path = _hymotion_paths(model_name)
 
         if not os.path.exists(config_path) or not os.path.exists(ckpt_path):
-            _download_hymotion_snapshot(model_name, model_dir)
+            model_dir = _download_hymotion_snapshot(model_name)
+            config_path = os.path.join(model_dir, "config.yml")
+            ckpt_path = os.path.join(model_dir, "latest.ckpt")
 
         if not os.path.exists(config_path):
             raise FileNotFoundError(
