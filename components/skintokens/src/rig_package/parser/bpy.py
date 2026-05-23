@@ -371,8 +371,8 @@ def extract_mesh(bones=None):
             for (second, third) in zip(loop[1:], loop[2:]):
                 faces.append((first, second, third))
                 normals.append(rot @ normal)
-        faces = np.array(faces, dtype=np.int32)
-        normals = np.array(normals, dtype=np.float32)
+        faces = np.array(faces, dtype=np.int32).reshape(-1, 3) if len(faces) > 0 else np.zeros((0, 3), dtype=np.int32)
+        normals = np.array(normals, dtype=np.float32).reshape(-1, 3) if len(normals) > 0 else np.zeros((0, 3), dtype=np.float32)
         
         coords = np.array([v.co for v in obj_verts])
         rot_np = np.array(rot)
@@ -416,6 +416,21 @@ def extract_mesh(bones=None):
         cur_face_bias += len(faces)
         vertex_bias.append(cur_vertex_bias)
         face_bias.append(cur_face_bias)
+    
+    if len(vertices_list) == 0:
+        # No mesh objects found — return empty arrays so downstream can handle gracefully
+        logging.warning("[extract_mesh] No MESH objects found in scene after loading file. "
+                        "Input may be a skeleton-only file (e.g., BVH) or meshes failed to load.")
+        return {
+            'mesh_names': np.array(mesh_names_list),
+            'vertices': np.zeros((0, 3), dtype=np.float32),
+            'faces': np.zeros((0, 3), dtype=np.int32),
+            'face_normals': np.zeros((0, 3), dtype=np.float32),
+            'vertex_normals': np.zeros((0, 3), dtype=np.float32),
+            'skin': None,
+            'vertex_bias': np.array(vertex_bias),
+            'face_bias': np.array(face_bias),
+        }
     
     vertices = np.vstack(vertices_list)
     faces = np.vstack(faces_list)

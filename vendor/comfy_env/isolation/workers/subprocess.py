@@ -81,6 +81,8 @@ _NOISY_LOG_TOKENS = (
     "=== Pre-predict data shapes ===",
     "data[",
     "  data[",
+    "unauthenticated requests to the HF Hub",
+    "Please set a HF_TOKEN",
 )
 
 def _is_noisy_worker_log(message: str) -> bool:
@@ -958,6 +960,8 @@ _NOISY_LOG_TOKENS = (
     "=== Pre-predict data shapes ===",
     "data[",
     "  data[",
+    "unauthenticated requests to the HF Hub",
+    "Please set a HF_TOKEN",
 )
 
 def _is_noisy_worker_log(message):

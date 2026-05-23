@@ -46,7 +46,7 @@ PIXAL3D_IMPORT_GROUPS = {
 NATTEN_RELEASE_BASE = "https://github.com/PozzettiAndrea/cuda-wheels/releases/download/natten-latest"
 
 
-def _run_python(env_python: Path, code: str, timeout: int = 30) -> dict[str, Any]:
+def _run_python(env_python: Path, code: str, timeout: int = 180) -> dict[str, Any]:
     if not env_python.exists():
         return {"ok": False, "detail": f"missing python: {env_python}"}
     try:
@@ -54,7 +54,16 @@ def _run_python(env_python: Path, code: str, timeout: int = 30) -> dict[str, Any
         proc_env = build_isolation_env(env_python)
     except Exception:
         proc_env = None
-    result = subprocess.run([str(env_python), "-c", code], capture_output=True, text=True, timeout=timeout, env=proc_env)
+    try:
+        result = subprocess.run([str(env_python), "-c", code], capture_output=True, text=True, timeout=timeout, env=proc_env)
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "ok": False,
+            "detail": f"probe timed out after {timeout}s",
+            "stdout": (exc.stdout or "").strip() if isinstance(exc.stdout, str) else "",
+            "stderr": (exc.stderr or "").strip() if isinstance(exc.stderr, str) else "",
+            "returncode": None,
+        }
     return {"ok": result.returncode == 0, "stdout": result.stdout.strip(), "stderr": result.stderr.strip(), "returncode": result.returncode}
 
 
@@ -77,7 +86,7 @@ def _component_config_state(spec) -> list[dict[str, Any]]:
 
 def _import_group_status(env_python: Path, groups: dict[str, list[str]]) -> dict[str, Any]:
     code = r'''
-import importlib, json
+import importlib, importlib.util, json
 checks = json.loads(r"""__GROUPS__""")
 out = {}
 for label, names in checks.items():
@@ -86,10 +95,12 @@ for label, names in checks.items():
     imported = None
     for name in names:
         try:
-            mod = importlib.import_module(name)
+            if importlib.util.find_spec(name) is None:
+                raise ModuleNotFoundError(name)
+            mod = importlib.import_module(name) if name == "natten" else None
             imported = name
             ok = True
-            version = getattr(mod, "__version__", "")
+            version = getattr(mod, "__version__", "") if mod is not None else ""
             extra = ""
             if name == "natten":
                 extra = f" HAS_LIBNATTEN={getattr(mod, 'HAS_LIBNATTEN', 'unknown')}"

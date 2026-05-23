@@ -1,13 +1,22 @@
 import atexit
+import contextlib
+import logging
 import os
 import signal
+import site
 import subprocess
 import sys
 import tempfile
 import time
+import warnings
 from pathlib import Path
 from typing import Optional
 
+warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", message=r".*unauthenticated requests to the HF Hub.*")
+warnings.filterwarnings("ignore", message=r".*torch_dtype.*deprecated.*")
+warnings.filterwarnings("ignore", message=r".*repetition_penalty.*inputs_embeds.*")
+logging.getLogger("transformers").setLevel(logging.ERROR)
 
 COMPONENT_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_CKPT = "experiments/articulation_xl_quantization_256_token_4/grpo_1400.ckpt"
@@ -20,12 +29,65 @@ _TOKENIZER = None
 _TRANSFORM = None
 _CURRENT_MODEL_KEY = None
 _BPY_PROC = None
+_BPY_LOG = None
+_BPY_DLL_HANDLES = []
+
+
+@contextlib.contextmanager
+def _quiet_hf_logging():
+    noisy_loggers = ("httpx", "httpcore", "huggingface_hub")
+    old_levels = {name: logging.getLogger(name).level for name in noisy_loggers}
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", message=r".*unauthenticated requests to the HF Hub.*"
+        )
+        warnings.filterwarnings("ignore", message=r".*deprecated.*")
+        try:
+            for name in noisy_loggers:
+                logging.getLogger(name).setLevel(logging.ERROR)
+            yield
+        finally:
+            for name, level in old_levels.items():
+                logging.getLogger(name).setLevel(level)
 
 
 def _ensure_repo_on_path() -> None:
     component = str(COMPONENT_DIR)
     if component not in sys.path:
         sys.path.insert(0, component)
+
+
+def _ensure_bpy_dll_path() -> None:
+    """Ensure Windows can resolve bpy-dependent DLLs in direct-load mode."""
+    global _BPY_DLL_HANDLES
+    if os.name != "nt" or not hasattr(os, "add_dll_directory"):
+        return
+    if _BPY_DLL_HANDLES:
+        return
+
+    candidates = []
+    try:
+        candidates.extend(site.getsitepackages())
+    except Exception:
+        pass
+    candidates.extend(sys.path)
+
+    seen = set()
+    for base in candidates:
+        if not base:
+            continue
+        bpy_dir = Path(base) / "bpy"
+        if not bpy_dir.exists():
+            continue
+        key = str(bpy_dir).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            # Keep handles alive for process lifetime.
+            _BPY_DLL_HANDLES.append(os.add_dll_directory(str(bpy_dir)))
+        except Exception:
+            continue
 
 
 def _resolve_path(path: str) -> Path:
@@ -60,13 +122,14 @@ def _download_file(filename: str) -> Path:
 
     from huggingface_hub import hf_hub_download
 
-    return Path(
-        hf_hub_download(
-            repo_id=REPO_ID,
-            filename=filename,
-            local_dir=str(COMPONENT_DIR),
+    with _quiet_hf_logging():
+        return Path(
+            hf_hub_download(
+                repo_id=REPO_ID,
+                filename=filename,
+                local_dir=str(COMPONENT_DIR),
+            )
         )
-    )
 
 
 def _ensure_model_files(model_ckpt: str) -> Path:
@@ -82,11 +145,12 @@ def _ensure_model_files(model_ckpt: str) -> Path:
     if not llm_dir.exists():
         from huggingface_hub import snapshot_download
 
-        snapshot_download(
-            repo_id=LLM_REPO,
-            local_dir=str(llm_dir),
-            ignore_patterns=["*.bin", "*.safetensors"],
-        )
+        with _quiet_hf_logging():
+            snapshot_download(
+                repo_id=LLM_REPO,
+                local_dir=str(llm_dir),
+                ignore_patterns=["*.bin", "*.safetensors"],
+            )
 
     if not ckpt.exists():
         raise FileNotFoundError(f"SkinTokens checkpoint not found: {model_ckpt}")
@@ -105,6 +169,11 @@ def _load_model(model_ckpt: str, hf_path: Optional[str]):
     from src.data.transform import Transform
     from src.server.spec import get_model
     from src.tokenizer.parse import get_tokenizer
+    try:
+        from transformers.utils import logging as hf_logging
+        hf_logging.set_verbosity_error()
+    except Exception:
+        pass
 
     old_cwd = Path.cwd()
     os.chdir(COMPONENT_DIR)
@@ -146,7 +215,7 @@ def _post_bpy_payload(endpoint: str, payload):
 
 
 def _ensure_bpy_server(timeout: int = 30) -> None:
-    global _BPY_PROC
+    global _BPY_PROC, _BPY_LOG
 
     _ensure_repo_on_path()
     from src.server.spec import BPY_SERVER
@@ -159,14 +228,22 @@ def _ensure_bpy_server(timeout: int = 30) -> None:
         pass
 
     if _BPY_PROC is None or _BPY_PROC.poll() is not None:
+        log_dir = COMPONENT_DIR / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        if _BPY_LOG is not None and not _BPY_LOG.closed:
+            _BPY_LOG.close()
+        _BPY_LOG = open(log_dir / "skintokens_bpy_server.log", "a", encoding="utf-8")
         kwargs = {
             "args": [sys.executable, str(COMPONENT_DIR / "bpy_server.py")],
             "cwd": str(COMPONENT_DIR),
-            "stdout": None,
-            "stderr": None,
+            "stdout": _BPY_LOG,
+            "stderr": _BPY_LOG,
         }
         if os.name == "nt":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+            if hasattr(subprocess, "CREATE_NO_WINDOW"):
+                creationflags |= subprocess.CREATE_NO_WINDOW
+            kwargs["creationflags"] = creationflags
         else:
             kwargs["preexec_fn"] = os.setsid
         _BPY_PROC = subprocess.Popen(**kwargs)
@@ -179,7 +256,16 @@ def _ensure_bpy_server(timeout: int = 30) -> None:
             return
         except Exception:
             time.sleep(0.5)
-    raise RuntimeError("SkinTokens bpy_server failed to start")
+    detail = ""
+    if _BPY_LOG is not None:
+        try:
+            _BPY_LOG.flush()
+        except Exception:
+            pass
+        log_path = getattr(_BPY_LOG, "name", "")
+        if log_path:
+            detail = f"; see log: {log_path}"
+    raise RuntimeError(f"SkinTokens bpy_server failed to start{detail}")
 
 
 def _stop_bpy_server() -> None:
@@ -192,6 +278,26 @@ def _stop_bpy_server() -> None:
             os.killpg(os.getpgid(_BPY_PROC.pid), signal.SIGTERM)
     except ProcessLookupError:
         pass
+    if _BPY_LOG is not None:
+        try:
+            _BPY_LOG.close()
+        except Exception:
+            pass
+
+
+def _restart_bpy_server(timeout: int = 30) -> None:
+    global _BPY_PROC
+    _stop_bpy_server()
+    _BPY_PROC = None
+    _ensure_bpy_server(timeout=timeout)
+
+
+def _post_bpy_payload_with_retry(endpoint: str, payload):
+    try:
+        return _post_bpy_payload(endpoint, payload)
+    except Exception:
+        _restart_bpy_server()
+        return _post_bpy_payload(endpoint, payload)
 
 
 def _output_path(input_path: Path) -> Path:
@@ -290,14 +396,22 @@ class SkinTokensRigMesh:
             persistent_workers=False,
             datapath=datapath,
         ).split_by_cls()
-        module = RigDatasetModule(
-            predict_dataset_config=dataset_config,
-            predict_transform=transform,
-            tokenizer=tokenizer,
-            process_fn=tokenrig._process_fn,
-        )
-        dataloader = module.predict_dataloader()["articulation"]
-        batch = next(iter(dataloader))
+        def _make_dataloader():
+            module = RigDatasetModule(
+                predict_dataset_config=dataset_config,
+                predict_transform=transform,
+                tokenizer=tokenizer,
+                process_fn=tokenrig._process_fn,
+            )
+            return module.predict_dataloader()["articulation"]
+
+        try:
+            dataloader = _make_dataloader()
+            batch = next(iter(dataloader))
+        except Exception:
+            _restart_bpy_server()
+            dataloader = _make_dataloader()
+            batch = next(iter(dataloader))
         batch = {k: v.to("cuda") if isinstance(v, Tensor) else v for k, v in batch.items()}
 
         if not use_skeleton:
@@ -344,7 +458,7 @@ class SkinTokensRigMesh:
             asset.normalize_skin()
 
         if use_transfer:
-            result = _post_bpy_payload(
+            result = _post_bpy_payload_with_retry(
                 "transfer",
                 {
                     "source_asset": asset,
@@ -354,7 +468,7 @@ class SkinTokensRigMesh:
                 },
             )
         else:
-            result = _post_bpy_payload(
+            result = _post_bpy_payload_with_retry(
                 "export",
                 {"asset": asset, "filepath": str(out_path), "group_per_vertex": 4},
             )
