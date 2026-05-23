@@ -59,6 +59,31 @@ def _hy_ckpts_dir():
     return os.path.join(base, "ckpts")
 
 
+def _download_hymotion_snapshot(model_name: str, model_dir: str) -> None:
+    """Download HY-Motion checkpoints into the exact folder the nodes load from."""
+    repo_id = f"tencent/{model_name}"
+    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+    os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+    try:
+        from huggingface_hub import snapshot_download
+    except Exception as exc:
+        raise RuntimeError(
+            "HY-Motion model files are missing and huggingface_hub is not available "
+            f"to auto-download {repo_id}. Install huggingface_hub or place the model "
+            f"files in: {model_dir}"
+        ) from exc
+
+    os.makedirs(model_dir, exist_ok=True)
+    print(f"[HY-Motion] Missing checkpoint files, downloading {repo_id} -> {model_dir}")
+    snapshot_download(
+        repo_id=repo_id,
+        local_dir=model_dir,
+        local_dir_use_symlinks=False,
+        resume_download=True,
+    )
+    print(f"[HY-Motion] Downloaded {repo_id}")
+
+
 def get_timestamp():
     t = time.time()
     ms = int((t - int(t)) * 1000)
@@ -1208,8 +1233,17 @@ class HYMotionLoadNetwork:
         config_path = os.path.join(model_dir, "config.yml")
         ckpt_path = os.path.join(model_dir, "latest.ckpt")
 
+        if not os.path.exists(config_path) or not os.path.exists(ckpt_path):
+            _download_hymotion_snapshot(model_name, model_dir)
+
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"Config not found: {config_path}")
+            raise FileNotFoundError(
+                f"Config not found after auto-download: {config_path}"
+            )
+        if not os.path.exists(ckpt_path):
+            raise FileNotFoundError(
+                f"Checkpoint not found after auto-download: {ckpt_path}"
+            )
 
         print(f"[HY-Motion] Loading network: {config_path}")
 
