@@ -5,7 +5,7 @@ shared_env_name = "openblender"
 packages = ["pytorch3d", "gsplat", "nvdiffrast", "flash-attn", "spconv", "cumm"]
 
 [dependencies]
-numpy = ">=2.0"
+numpy = "1.26.*"
 scipy = ">=1.11.0"
 pillow = ">=10.0.0"
 einops = "*"
