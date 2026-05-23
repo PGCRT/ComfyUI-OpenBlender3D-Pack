@@ -3,6 +3,7 @@ import contextlib
 import logging
 import os
 import signal
+import site
 import subprocess
 import sys
 import tempfile
@@ -29,6 +30,7 @@ _TRANSFORM = None
 _CURRENT_MODEL_KEY = None
 _BPY_PROC = None
 _BPY_LOG = None
+_BPY_DLL_HANDLES = []
 
 
 @contextlib.contextmanager
@@ -53,6 +55,39 @@ def _ensure_repo_on_path() -> None:
     component = str(COMPONENT_DIR)
     if component not in sys.path:
         sys.path.insert(0, component)
+
+
+def _ensure_bpy_dll_path() -> None:
+    """Ensure Windows can resolve bpy-dependent DLLs in direct-load mode."""
+    global _BPY_DLL_HANDLES
+    if os.name != "nt" or not hasattr(os, "add_dll_directory"):
+        return
+    if _BPY_DLL_HANDLES:
+        return
+
+    candidates = []
+    try:
+        candidates.extend(site.getsitepackages())
+    except Exception:
+        pass
+    candidates.extend(sys.path)
+
+    seen = set()
+    for base in candidates:
+        if not base:
+            continue
+        bpy_dir = Path(base) / "bpy"
+        if not bpy_dir.exists():
+            continue
+        key = str(bpy_dir).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            # Keep handles alive for process lifetime.
+            _BPY_DLL_HANDLES.append(os.add_dll_directory(str(bpy_dir)))
+        except Exception:
+            continue
 
 
 def _resolve_path(path: str) -> Path:
@@ -134,6 +169,11 @@ def _load_model(model_ckpt: str, hf_path: Optional[str]):
     from src.data.transform import Transform
     from src.server.spec import get_model
     from src.tokenizer.parse import get_tokenizer
+    try:
+        from transformers.utils import logging as hf_logging
+        hf_logging.set_verbosity_error()
+    except Exception:
+        pass
 
     old_cwd = Path.cwd()
     os.chdir(COMPONENT_DIR)
@@ -313,6 +353,7 @@ class SkinTokensRigMesh:
         use_postprocess: bool,
     ):
         _ensure_repo_on_path()
+        _ensure_bpy_dll_path()
         tokenrig, tokenizer, transform = _load_model(model["model_ckpt"], model.get("hf_path"))
 
         from torch import Tensor
