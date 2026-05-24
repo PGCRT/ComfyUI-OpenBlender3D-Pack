@@ -1,0 +1,109 @@
+{
+  "1": {
+    "inputs": {
+      "checkpoint": "lito_dit_rgba (recommended)",
+      "compile": false,
+      "precision": "auto"
+    },
+    "class_type": "LiToLoadModel",
+    "_meta": {
+      "title": "(Down)Load LiTo Model"
+    }
+  },
+  "5": {
+    "inputs": {
+      "image": "example.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Charger Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "filename": "lito_output",
+      "gaussians": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "LiToExportPLY",
+    "_meta": {
+      "title": "LiTo Export PLY"
+    }
+  },
+  "8": {
+    "inputs": {
+      "sampling_steps": 20,
+      "cfg_scale": 3,
+      "sampling_method": "heun",
+      "seed": 1,
+      "model": [
+        "1",
+        0
+      ],
+      "image": [
+        "5",
+        0
+      ],
+      "mask": [
+        "31",
+        1
+      ]
+    },
+    "class_type": "LiToImageTo3D",
+    "_meta": {
+      "title": "LiTo Image to 3D"
+    }
+  },
+  "17": {
+    "inputs": {
+      "mask": [
+        "31",
+        1
+      ]
+    },
+    "class_type": "MaskPreview",
+    "_meta": {
+      "title": "MaskPreview"
+    }
+  },
+  "31": {
+    "inputs": {
+      "model": "BEN2",
+      "sensitivity": 1,
+      "process_res": 1024,
+      "mask_blur": 0,
+      "mask_offset": 0,
+      "invert_output": false,
+      "refine_foreground": true,
+      "background": "Alpha",
+      "background_color": "#222222",
+      "image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "RMBG",
+    "_meta": {
+      "title": "Retirer l'arrière-plan (RMBG)"
+    }
+  },
+  "32": {
+    "inputs": {
+      "fov_degrees": 50,
+      "image_width": 512,
+      "image_height": 512,
+      "renderer": "spark",
+      "transport_format": "ply",
+      "ply_path": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "PreviewGaussians",
+    "_meta": {
+      "title": "Preview Gaussians"
+    }
+  }
+}

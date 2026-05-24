@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "image": "pixal3d_test.png"
+      "image": "example.png"
     },
     "class_type": "LoadImage",
     "_meta": {

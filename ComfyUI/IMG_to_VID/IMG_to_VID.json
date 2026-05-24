@@ -79,7 +79,8 @@
       "config_pipe": [
         "116",
         0
-      ]
+      ],
+      "unload_model_before_vae_decode": false
     },
     "class_type": "CRT_LTX23UnifiedSampler",
     "_meta": {

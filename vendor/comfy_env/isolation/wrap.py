@@ -346,6 +346,12 @@ def _handle_vram_budget(request: dict) -> dict:
     Called when the worker's shimmed load_models_gpu() needs to load models.
     The parent evicts its own models (via free_memory) so the subprocess's
     real load_models_gpu() sees enough free VRAM via get_free_memory().
+
+    IMPORTANT: We must NOT trigger IPC commands back to the worker during
+    this callback. If free_memory() tries to unload a SubprocessModelPatcher,
+    it calls send_command() which would send a message to the worker while
+    the worker is blocked waiting for this callback_response — corrupting
+    the protocol and causing a cross-process deadlock.
     """
     try:
         import comfy.model_management as mm
@@ -362,8 +368,20 @@ def _handle_vram_budget(request: dict) -> dict:
             f"free before eviction: {free_before / 1e9:.2f}GB"
         )
 
-    # Evict parent-side models to make room (with 10% headroom)
-    mm.free_memory(total_requested * 1.1, device)
+    # Temporarily hide SubprocessModelPatchers from free_memory() to avoid
+    # sending IPC commands back to the blocked worker.
+    removed = []
+    try:
+        for entry in list(mm.current_loaded_models):
+            # SubprocessModelPatcher has _worker attr; its inner model is SubprocessModel
+            if hasattr(entry.model, '_worker'):
+                mm.current_loaded_models.remove(entry)
+                removed.append(entry)
+        # Evict parent-side models to make room (with 10% headroom)
+        mm.free_memory(total_requested * 1.1, device)
+    finally:
+        for entry in removed:
+            mm.current_loaded_models.append(entry)
 
     if _DEBUG:
         free_after = mm.get_free_memory(device)

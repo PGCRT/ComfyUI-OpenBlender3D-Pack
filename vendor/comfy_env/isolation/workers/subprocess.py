@@ -2366,7 +2366,7 @@ class SubprocessWorker(Worker):
         self._shm_dir = _get_shm_dir()
         self._process: Optional[subprocess.Popen] = None
         self._shutdown = False
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()  # Reentrant: callbacks may trigger send_command
         self._last_new_models = []  # Auto-detected models from last call
         self._callback_handlers: Dict[str, Callable] = {}  # Bidirectional RPC callbacks
         self._call_counter = 0  # Monotonic call ID for request correlation

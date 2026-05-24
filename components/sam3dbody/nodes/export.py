@@ -94,6 +94,21 @@ class BpyFBXExporter:
             env["PYTHONNOUSERSITE"] = "1"
             env["SAM3DBODY_BPY_SUBPROC"] = "1"
             env["PYTHONPATH"] = os.pathsep.join([p for p in sys.path if p])
+            # Harden against Intel Fortran runtime crash on Windows:
+            # forrtl: error (200) is triggered by console window-close signals.
+            # Using DETACHED_PROCESS + pythonw.exe (if available) prevents this.
+            creationflags = 0
+            if os.name == "nt":
+                creationflags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+                # Prefer pythonw.exe to avoid any console window at all
+                pythonw = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
+                if os.path.isfile(pythonw):
+                    cmd[0] = pythonw
+                # Also suppress MKL/Intel threading signals that can cause aborts
+                env["MKL_NUM_THREADS"] = "1"
+                env["OPENBLAS_NUM_THREADS"] = "1"
+                env["OMP_NUM_THREADS"] = "1"
+                env["FOR_DISABLE_CONSOLE_CTRL_HANDLER"] = "1"
 
             completed = subprocess.run(
                 cmd,
@@ -101,6 +116,7 @@ class BpyFBXExporter:
                 capture_output=True,
                 text=True,
                 check=False,
+                creationflags=creationflags,
             )
 
             if completed.returncode != 0:

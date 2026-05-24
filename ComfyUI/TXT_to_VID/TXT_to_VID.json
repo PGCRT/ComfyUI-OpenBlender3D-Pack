@@ -62,6 +62,7 @@
       "live_preview": false,
       "frame_count_from_audio": false,
       "vae_decode_tiled": false,
+      "unload_model_before_vae_decode": false,
       "megapixels_target": 1,
       "aspect_ratio": "3:2 (Landscape)",
       "frame_count": 161,
@@ -177,7 +178,7 @@
   },
   "539": {
     "inputs": {
-      "image": "bike.webp"
+      "image": "example.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -196,6 +197,19 @@
     "class_type": "ImageDimensionsFromMegaPixelsAlt",
     "_meta": {
       "title": "Image Dimensions From MP alt (CRT)"
+    }
+  },
+  "542": {
+    "inputs": {
+      "strength_model": 1,
+      "model": [
+        "522",
+        0
+      ]
+    },
+    "class_type": "CRTAutoDLLTX23ICOutpaintLoRA",
+    "_meta": {
+      "title": "LTX2.3 IC Outpaint LoRA"
     }
   },
   "139:482": {
@@ -220,6 +234,10 @@
         "523",
         0
       ],
+      "model_outpaint": [
+        "542",
+        0
+      ],
       "spatial_upscale_model": [
         "533",
         0
@@ -231,28 +249,11 @@
       "latent_downscale_factor": [
         "527",
         1
-      ],
-      "model_outpaint": [
-        "542",
-        0
       ]
     },
     "class_type": "CRT_LTX23USModelsPipe",
     "_meta": {
       "title": "LTX 2.3 US Models Pipe (CRT)"
-    }
-  },
-  "542": {
-    "inputs": {
-      "strength_model": 1,
-      "model": [
-        "522",
-        0
-      ]
-    },
-    "class_type": "CRTAutoDLLTX23ICOutpaintLoRA",
-    "_meta": {
-      "title": "LTX2.3 IC Outpaint LoRA"
     }
   }
 }

@@ -33,10 +33,6 @@
         "527",
         0
       ],
-      "Video (V2V image batch)": [
-        "525",
-        0
-      ],
       "V2V Depth (override)": [
         "525",
         0
@@ -62,6 +58,7 @@
       "live_preview": false,
       "frame_count_from_audio": false,
       "vae_decode_tiled": false,
+      "unload_model_before_vae_decode": false,
       "megapixels_target": 1,
       "aspect_ratio": "3:2 (Landscape)",
       "frame_count": 161,
@@ -114,7 +111,7 @@
   },
   "525": {
     "inputs": {
-      "video": "viewport_video (36).mp4",
+      "video": "example.mp4",
       "force_rate": 0,
       "custom_width": 0,
       "custom_height": 0,
@@ -222,6 +219,10 @@
         "532",
         0
       ],
+      "model_outpaint": [
+        "537",
+        0
+      ],
       "spatial_upscale_model": [
         "533",
         0
@@ -233,10 +234,6 @@
       "latent_downscale_factor": [
         "534",
         1
-      ],
-      "model_outpaint": [
-        "537",
-        0
       ]
     },
     "class_type": "CRT_LTX23USModelsPipe",

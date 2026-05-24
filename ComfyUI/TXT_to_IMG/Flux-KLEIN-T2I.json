@@ -67,7 +67,7 @@
   },
   "96": {
     "inputs": {
-      "image": "bike.webp"
+      "image": "example.png"
     },
     "class_type": "LoadImage",
     "_meta": {
