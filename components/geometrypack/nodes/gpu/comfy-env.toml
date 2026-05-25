@@ -5,7 +5,7 @@ shared_env_name = "openblender"
 
 [dependencies]
 av = "*"
-numpy = "1.26.*"
+numpy = ">=1.26.0,<1.27.0"
 safetensors = "*"
 einops = "*"
 psutil = "*"

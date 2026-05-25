@@ -94,7 +94,7 @@ def config_to_pixi_dict(
                     ver = torchvision_map.get(pin_version, "0.23")
                 else:
                     ver = pin_version
-                pypi_deps[pkg] = {"version": f"=={ver}.*", "index": pytorch_index}
+                pypi_deps[pkg] = {"version": f"=={ver}.0", "index": pytorch_index}
 
     # Workspace
     workspace = pixi_data.setdefault("workspace", {})
@@ -123,7 +123,7 @@ def config_to_pixi_dict(
     # Dependencies
     dependencies = pixi_data.setdefault("dependencies", {})
     py_version = cfg.python or f"{sys.version_info.major}.{sys.version_info.minor}"
-    dependencies.setdefault("python", f"{py_version}.*")
+    dependencies.setdefault("python", f">={py_version}.0,<{int(py_version.split('.')[0]) + 1}.0")
     dependencies.setdefault("pip", "*")
 
     # Always require modern setuptools (fixes conda-forge Python version string parsing)
@@ -157,7 +157,7 @@ def config_to_pixi_dict(
     # Pixal3D isolated env is the one that requests natten in cuda_packages.
     cuda_pkgs = {str(p).lower() for p in (cfg.cuda_packages or [])}
     is_pixal3d_env = "natten" in cuda_pkgs
-    conda_pin = "1.26.*"
+    conda_pin = ">=1.26.0,<1.27.0"
     pypi_pin = ">=1.26.0,<1.27.0"
     if is_pixal3d_env:
         if "numpy" in pypi_deps and str(pypi_deps["numpy"]) == pypi_pin:

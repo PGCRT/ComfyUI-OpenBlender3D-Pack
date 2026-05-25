@@ -8,7 +8,7 @@ shared_env_name = "openblender"
 
 [dependencies]
 av = "*"
-numpy = "1.26.*"   # bpy 4.2 compiled against numpy 1.x
+numpy = ">=1.26.0,<1.27.0"   # bpy 4.2 compiled against numpy 1.x
 tqdm = "*"
 
 [pypi-dependencies]
