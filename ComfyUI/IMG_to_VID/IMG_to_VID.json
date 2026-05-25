@@ -54,6 +54,8 @@
       "live_preview": false,
       "frame_count_from_audio": false,
       "vae_decode_tiled": false,
+      "unload_model_before_vae_decode": true,
+      "low_vram": true,
       "megapixels_target": 1,
       "aspect_ratio": "3:2 (Landscape)",
       "frame_count": 161,
@@ -79,8 +81,7 @@
       "config_pipe": [
         "116",
         0
-      ],
-      "unload_model_before_vae_decode": false
+      ]
     },
     "class_type": "CRT_LTX23UnifiedSampler",
     "_meta": {
@@ -199,6 +200,10 @@
         "525",
         0
       ],
+      "model_outpaint": [
+        "530",
+        0
+      ],
       "spatial_upscale_model": [
         "526",
         0
@@ -210,10 +215,6 @@
       "latent_downscale_factor": [
         "527",
         1
-      ],
-      "model_outpaint": [
-        "530",
-        0
       ]
     },
     "class_type": "CRT_LTX23USModelsPipe",
