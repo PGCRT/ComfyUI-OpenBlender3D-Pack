@@ -123,7 +123,8 @@ def config_to_pixi_dict(
     # Dependencies
     dependencies = pixi_data.setdefault("dependencies", {})
     py_version = cfg.python or f"{sys.version_info.major}.{sys.version_info.minor}"
-    dependencies.setdefault("python", f">={py_version}.0,<{int(py_version.split('.')[0]) + 1}.0")
+    major, minor = py_version.split('.')
+    dependencies.setdefault("python", f">={py_version}.0,<{major}.{int(minor) + 1}.0")
     dependencies.setdefault("pip", "*")
 
     # Always require modern setuptools (fixes conda-forge Python version string parsing)
