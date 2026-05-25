@@ -42,6 +42,14 @@ except Exception:
 prepare_runtime_environment()
 os.environ.setdefault("COMFY_ENV_METADATA_TRUST_CACHE", "1")
 
+print("", file=sys.stderr)
+print("\033[36m" r"  ____  ___  _____  _____  __   _____  _____  _______ " "\033[0m", file=sys.stderr)
+print("\033[36m" r" / __ \/ _ \/ __/ |/ / _ )/ /  / __/ |/ / _ \/ __/ _ \\" "\033[0m", file=sys.stderr)
+print("\033[36m" r"/ /_/ / ___/ _//    / _  / /__/ _//    / // / _// , _/" "\033[0m", file=sys.stderr)
+print("\033[36m" r"\____/_/  /___/_/|_/____/____/___/_/|_/____/___/_/|_|  " "\033[0m", file=sys.stderr)
+print(r"                                               " "\033[93mv0.37.0\033[0m", file=sys.stderr)
+print("", file=sys.stderr)
+
 try:
     from comfy_env import get_comfyui_dir, setup_env
     from comfy_3d_viewers import copy_viewer
