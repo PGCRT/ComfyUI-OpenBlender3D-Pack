@@ -160,7 +160,7 @@ def config_to_pixi_dict(
     conda_pin = ">=1.26.0,<1.27.0"
     pypi_pin = ">=1.26.0,<1.27.0"
     if is_pixal3d_env:
-        if "numpy" in pypi_deps and str(pypi_deps["numpy"]) == pypi_pin:
+        if "numpy" in pypi_deps and str(pypi_deps["numpy"]) in (pypi_pin, "1.26.*"):
             log("  [OB] Skipping legacy numpy<1.27 pypi pin for Pixal3D env (allow pixi solver to choose compatible numpy)")
             del pypi_deps["numpy"]
     else:
