@@ -99,7 +99,7 @@ def _shared_env_status() -> dict:
 
 
 def _repair_shared_env(reason: str) -> None:
-    print(f"[OpenBlender3D-Pack] Isolation env missing/broken; rebuilding ({reason})", file=sys.stderr)
+    print("[OpenBlender3D-Pack] Isolation env missing; building it... (please be patient)", file=sys.stderr)
     cmd = [sys.executable, str(PACK_DIR / "install.py"), "--repair", "--all-components"]
     result = _subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
