@@ -20,6 +20,7 @@ def _comfy_tqdm_class():
 
     class _ComfyTqdm(_tqdm_mod.tqdm):
         def __init__(self, *args, **kwargs):
+            kwargs.pop("name", None)
             kwargs.setdefault("mininterval", 0.2)
             kwargs.setdefault("maxinterval", 2.0)
             super().__init__(*args, **kwargs)
