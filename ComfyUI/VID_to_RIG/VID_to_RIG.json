@@ -13,11 +13,11 @@
   },
   "17": {
     "inputs": {
-      "video": "[savetwt.com] BoveiDaDon__________ - 2055477439003029764 - 720x1280.mp4",
+      "video": "viewport_video.mp4",
       "force_rate": 0,
       "custom_width": 0,
       "custom_height": 0,
-      "frame_load_cap": 185,
+      "frame_load_cap": 0,
       "skip_first_frames": 0,
       "select_every_nth": 1,
       "format": "AnimateDiff"
