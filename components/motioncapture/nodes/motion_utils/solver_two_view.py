@@ -95,6 +95,11 @@ class PycolmapRansacTwoViewGeometrySolver:
         return self.camera_matrix
 
     def solve(self, pts0, pts1):
+        if len(pts0) < 8 or len(pts1) < 8:
+            raise RuntimeError(
+                f"not enough matches for relative pose estimation ({len(pts0)} points)"
+            )
+
         matches = np.stack([np.arange(len(pts0)), np.arange(len(pts0))], axis=-1)
         answer = pycolmap.estimate_calibrated_two_view_geometry(
             self.camera,
@@ -104,6 +109,11 @@ class PycolmapRansacTwoViewGeometrySolver:
             matches=matches,
             options=self.options,
         )
+
+        if answer is None or getattr(answer, "cam2_from_cam1", None) is None:
+            raise RuntimeError(
+                f"pycolmap could not estimate a relative pose from {len(pts0)} matches"
+            )
 
         # cam2_from_cam1 means T_0_to_1 in our language
         Rt = answer.cam2_from_cam1.matrix().astype(np.float32)  # shape (3, 4)

@@ -52,14 +52,30 @@ class SimpleVO:
         T_w2c_list = [np.eye(4)]  # cam poses are defined as T_w2c @ p_w = p_c
         prev_frame = frames[0]
         num_remaining = len(frames) - 1
+        failed_pairs = 0
         pbar = comfy.utils.ProgressBar(num_remaining)
         for frame_idx in range(1, len(frames)):
             _mm().throw_exception_if_processing_interrupted()
             curr_frame = frames[frame_idx]
 
             # Match frames
-            pts0, pts1 = matcher.match_np(prev_frame, curr_frame)
-            T_delta = solver.solve(pts0, pts1)  # T_delta = T_curr @ T_last^-1
+            try:
+                pts0, pts1 = matcher.match_np(prev_frame, curr_frame)
+                T_delta = solver.solve(pts0, pts1)  # T_delta = T_curr @ T_last^-1
+                if T_delta is None or np.shape(T_delta) != (4, 4) or not np.isfinite(T_delta).all():
+                    raise RuntimeError("invalid relative pose returned by solver")
+            except Exception as exc:
+                failed_pairs += 1
+                log.warning(
+                    "SimpleVO failed for sampled frame pair %d->%d (%s); reusing previous pose",
+                    frame_idx - 1,
+                    frame_idx,
+                    exc,
+                )
+                T_w2c_list.append(T_w2c_list[-1].copy())
+                prev_frame = curr_frame
+                pbar.update(1)
+                continue
 
             # Compute current frame's transformation matrix
             T_w2c_list.append(T_delta @ T_w2c_list[-1])
@@ -67,5 +83,12 @@ class SimpleVO:
             # Current frame becomes previous frame for next iteration
             prev_frame = curr_frame
             pbar.update(1)
+
+        if failed_pairs:
+            log.warning(
+                "SimpleVO reused previous pose for %d/%d sampled frame pairs",
+                failed_pairs,
+                num_remaining,
+            )
 
         return T_w2c_list

@@ -1917,6 +1917,13 @@ def main():
         # Also log locally for debugging
         wlog(f"[print] {message}")
 
+    # numba resolves builtins.print by getattr(__main__, print.__name__) while
+    # importing some JIT modules. Expose the forwarded function there so imports
+    # do not fail when print forwarding is enabled.
+    _main_module = sys.modules.get("__main__")
+    if _main_module is not None:
+        setattr(_main_module, _forwarded_print.__name__, _forwarded_print)
+
     builtins.print = _forwarded_print
 
     # Also forward logging module output
