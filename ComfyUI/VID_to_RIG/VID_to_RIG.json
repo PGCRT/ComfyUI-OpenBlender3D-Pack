@@ -13,11 +13,11 @@
   },
   "17": {
     "inputs": {
-      "video": "example.mp4",
+      "video": "[savetwt.com] BoveiDaDon__________ - 2055477439003029764 - 720x1280.mp4",
       "force_rate": 0,
       "custom_width": 0,
       "custom_height": 0,
-      "frame_load_cap": 0,
+      "frame_load_cap": 185,
       "skip_first_frames": 0,
       "select_every_nth": 1,
       "format": "AnimateDiff"
@@ -29,7 +29,7 @@
   },
   "21": {
     "inputs": {
-      "moving_camera": false,
+      "moving_camera": true,
       "focal_length_mm": 0,
       "bbox_scale": 1.2,
       "vo_method": "simple_vo",
@@ -37,7 +37,7 @@
       "vo_step": 8,
       "chunk_size": 32,
       "images": [
-        "17",
+        "34",
         0
       ],
       "masks": [
@@ -69,7 +69,7 @@
       "background": "Alpha",
       "background_color": "#222222",
       "image": [
-        "17",
+        "34",
         0
       ]
     },
@@ -89,6 +89,22 @@
     "class_type": "SMPLToGLB",
     "_meta": {
       "title": "SMPL to GLB Animation"
+    }
+  },
+  "34": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "min_megapixels": 0.5,
+      "max_megapixels": 1,
+      "resolution_steps": 1,
+      "image": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "ImageScaleRangeFromMp",
+    "_meta": {
+      "title": "Image Scale Range From MP (CRT)"
     }
   }
 }
